@@ -13,6 +13,7 @@ export function GameProvider({ children }) {
     x: 50,
     y: GAME_CONFIG.GROUND_HEIGHT
   })
+  const [assetsLoaded, setAssetsLoaded] = useState(false)
 
   const value = {
     gameState,
@@ -26,7 +27,9 @@ export function GameProvider({ children }) {
     characterY,
     setCharacterY,
     characterPosition,
-    setCharacterPosition
+    setCharacterPosition,
+    assetsLoaded,
+    setAssetsLoaded
   }
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>

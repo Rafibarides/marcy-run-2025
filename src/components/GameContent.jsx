@@ -10,6 +10,7 @@ import Coin from './game/Coin'
 import Obstacle from './game/Obstacle'
 import { GAME_STATES, GAME_CONFIG } from '../utils/constants'
 import { useEffect, useState } from 'react'
+import LoadingScreen from './ui/LoadingScreen'
 
 const GameContainer = styled.div`
   width: 100vw;
@@ -36,8 +37,21 @@ const GameArea = styled.div`
   overflow: hidden;
 `
 
+const preloadImage = (src) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = resolve
+    img.onerror = reject
+    img.src = src
+  })
+}
+
+const preloadFont = (fontFamily) => {
+  return document.fonts.load(`1em ${fontFamily}`)
+}
+
 export function GameContent() {
-  const { gameState } = useGame()
+  const { gameState, assetsLoaded, setAssetsLoaded } = useGame()
   const [scale, setScale] = useState(1)
 
   useEffect(() => {
@@ -62,6 +76,46 @@ export function GameContent() {
     window.addEventListener('resize', updateScale)
     return () => window.removeEventListener('resize', updateScale)
   }, [])
+
+  useEffect(() => {
+    const loadAssets = async () => {
+      try {
+        // Preload all images
+        const imagePromises = [
+          '/assets/images/menu.png',
+          '/assets/images/logo.png',
+          '/assets/images/background.jpg',
+          '/assets/images/ground.png',
+          '/assets/images/moon.png',
+          '/assets/images/obstacle.png',
+          '/assets/images/coin.png',
+          '/assets/images/ben.png',
+          '/assets/images/gonzalo.png',
+          '/assets/images/motun.png'
+        ].map(preloadImage)
+
+        // Preload fonts
+        const fontPromises = [
+          preloadFont('Kid Games'),
+          preloadFont('Poxel Font')
+        ]
+
+        // Wait for all assets to load
+        await Promise.all([...imagePromises, ...fontPromises])
+        setAssetsLoaded(true)
+      } catch (error) {
+        console.error('Failed to load assets:', error)
+        // Set loaded anyway to prevent infinite loading screen
+        setAssetsLoaded(true)
+      }
+    }
+
+    loadAssets()
+  }, [setAssetsLoaded])
+
+  if (!assetsLoaded) {
+    return <LoadingScreen />
+  }
 
   return (
     <GameContainer>
