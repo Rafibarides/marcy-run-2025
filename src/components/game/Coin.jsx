@@ -5,6 +5,7 @@ import { GAME_CONFIG } from '../../utils/constants'
 import { checkCollision } from '../../utils/collision'
 import { motion } from 'framer-motion'
 import { useGameLoop } from '../../hooks/useGameLoop'
+import { toCSSPosition } from '../../utils/coordinates'
 
 const CoinContainer = styled.div`
   position: absolute;
@@ -28,17 +29,17 @@ const CoinSprite = styled(motion.img).attrs(props => ({
 
 const DebugBox = styled.div.attrs(props => ({
   style: {
-    left: `${props.$x}px`,
-    bottom: `${props.$y}px`
+    ...toCSSPosition({ x: props.$x, y: props.$y })
   }
 }))`
   position: absolute;
   border: 2px solid blue;
-  background-color: rgba(0, 0, 255, 0.2);
+  background-color: rgba(0, 0, 255, 0);
   pointer-events: none;
   width: ${GAME_CONFIG.COIN_SIZE.WIDTH}px;
   height: ${GAME_CONFIG.COIN_SIZE.HEIGHT}px;
   z-index: 5;
+  opacity: 0;
 `
 
 const CoinCollisionBoundary = styled.div.attrs(props => ({
@@ -52,7 +53,7 @@ const CoinCollisionBoundary = styled.div.attrs(props => ({
   position: absolute;
   pointer-events: none;
   border: 2px dashed red;
-  opacity: 0.5;
+  opacity: 0;
   z-index: 10;
 `
 

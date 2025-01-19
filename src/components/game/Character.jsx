@@ -26,12 +26,14 @@ const DebugBox = styled(motion.div).attrs(props => ({
   }
 }))`
   position: absolute;
-  background-color: rgba(255, 0, 0, 0.2);
+  border: 2px solid red;
+  background-color: rgba(255, 0, 0, 0);
   pointer-events: none;
   width: ${GAME_CONFIG.CHARACTER_SIZE.WIDTH}px;
   height: ${GAME_CONFIG.CHARACTER_SIZE.HEIGHT}px;
   left: 50px;
   z-index: 5;
+  opacity: 0;
 `
 
 export default function Character() {

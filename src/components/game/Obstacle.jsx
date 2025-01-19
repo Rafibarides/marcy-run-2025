@@ -11,7 +11,7 @@ const ObstacleContainer = styled.div`
   width: ${GAME_CONFIG.VIEWPORT.WIDTH}px;
   height: ${GAME_CONFIG.VIEWPORT.HEIGHT}px;
   pointer-events: none;
-  z-index: 2;
+  z-index: 4;
 `
 
 const ObstacleSprite = styled(motion.img).attrs(props => ({
@@ -23,7 +23,7 @@ const ObstacleSprite = styled(motion.img).attrs(props => ({
   position: absolute;
   width: ${GAME_CONFIG.OBSTACLE_SIZE.WIDTH}px;
   height: ${GAME_CONFIG.OBSTACLE_SIZE.HEIGHT}px;
-  z-index: 2;
+  z-index: 4;
 `
 
 const DebugBox = styled.div.attrs(props => ({
@@ -34,11 +34,12 @@ const DebugBox = styled.div.attrs(props => ({
 }))`
   position: absolute;
   border: 2px solid red;
-  background-color: rgba(255, 0, 0, 0.2);
+  background-color: rgba(255, 0, 0, 0);
   pointer-events: none;
   width: ${GAME_CONFIG.OBSTACLE_SIZE.WIDTH}px;
   height: ${GAME_CONFIG.OBSTACLE_SIZE.HEIGHT}px;
-  z-index: 5;
+  z-index: 6;
+  opacity: 0;
 `
 
 const ObstacleCollisionBoundary = styled.div.attrs(props => ({
@@ -52,7 +53,7 @@ const ObstacleCollisionBoundary = styled.div.attrs(props => ({
   position: absolute;
   pointer-events: none;
   border: 2px dashed orange;
-  opacity: 0.5;
+  opacity: 0;
   z-index: 10;
 `
 
