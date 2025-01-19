@@ -11,6 +11,8 @@ import Obstacle from './game/Obstacle'
 import { GAME_STATES, GAME_CONFIG } from '../utils/constants'
 import { useEffect, useState } from 'react'
 import LoadingScreen from './ui/LoadingScreen'
+import { useAudio } from '../hooks/useAudio'
+import { Howl } from 'howler'
 
 const GameContainer = styled.div`
   width: 100vw;
@@ -53,6 +55,7 @@ const preloadFont = (fontFamily) => {
 export function GameContent() {
   const { gameState, assetsLoaded, setAssetsLoaded } = useGame()
   const [scale, setScale] = useState(1)
+  useAudio()
 
   useEffect(() => {
     const updateScale = () => {
@@ -100,12 +103,36 @@ export function GameContent() {
           preloadFont('Poxel Font')
         ]
 
-        // Wait for all assets to load
-        await Promise.all([...imagePromises, ...fontPromises])
+        // Preload audio
+        const audioPromises = [
+          new Promise((resolve, reject) => {
+            new Howl({
+              src: ['/assets/audio/coin.mp3'],
+              preload: true,
+              onload: () => resolve(),
+              onloaderror: (_, err) => reject(err)
+            })
+          }),
+          new Promise((resolve, reject) => {
+            new Howl({
+              src: ['/assets/audio/loser-track.mp3'],
+              preload: true,
+              onload: () => resolve(),
+              onloaderror: (_, err) => reject(err)
+            })
+          }),
+        ]
+
+        // Wait for all assets (images, fonts, audio) to load
+        await Promise.all([
+          ...imagePromises,
+          ...fontPromises,
+          ...audioPromises
+        ])
         setAssetsLoaded(true)
       } catch (error) {
         console.error('Failed to load assets:', error)
-        // Set loaded anyway to prevent infinite loading screen
+        // Set loaded anyway to prevent infinite loading
         setAssetsLoaded(true)
       }
     }

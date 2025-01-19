@@ -1,10 +1,11 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { useGame } from '../../hooks/useGame'
-import { GAME_CONFIG, GAME_STATES } from '../../utils/constants'
+import { GAME_CONFIG, GAME_STATES, AUDIO } from '../../utils/constants'
 import { checkCollision } from '../../utils/collision'
 import { motion } from 'framer-motion'
 import { useGameLoop } from '../../hooks/useGameLoop'
+import { Howl } from 'howler'
 
 const ObstacleContainer = styled.div`
   position: absolute;
@@ -60,6 +61,17 @@ const ObstacleCollisionBoundary = styled.div.attrs(props => ({
 export default function Obstacle() {
   const { characterY, setGameState } = useGame()
   const [obstacles, setObstacles] = useState([])
+  const loserSoundRef = useRef(null)
+  const timeSinceLastObstacleSpawnRef = useRef(0)
+  const [spawnInterval, setSpawnInterval] = useState(null)
+
+  const resetSpawnInterval = useCallback(() => {
+    setSpawnInterval(
+      Math.random() *
+      (GAME_CONFIG.OBSTACLE_SPAWN_INTERVAL.MAX - GAME_CONFIG.OBSTACLE_SPAWN_INTERVAL.MIN) + 
+      GAME_CONFIG.OBSTACLE_SPAWN_INTERVAL.MIN
+    )
+  }, [])
 
   const generateObstacle = useCallback(() => {
     const newObstacle = {
@@ -72,7 +84,23 @@ export default function Obstacle() {
     setObstacles(prev => [...prev, newObstacle])
   }, [])
 
-  const updateObstacles = useCallback(() => {
+  useEffect(() => {
+    loserSoundRef.current = new Howl({
+      src: [`/assets/audio/${AUDIO.GAME_OVER}`],
+      volume: 0.5,
+      preload: true
+    })
+    resetSpawnInterval()
+  }, [resetSpawnInterval])
+
+  const updateObstacles = useCallback((deltaTime) => {
+    timeSinceLastObstacleSpawnRef.current += deltaTime
+    if (spawnInterval && timeSinceLastObstacleSpawnRef.current >= spawnInterval) {
+      generateObstacle()
+      resetSpawnInterval()
+      timeSinceLastObstacleSpawnRef.current = 0
+    }
+
     setObstacles(prev => {
       const updatedObstacles = []
       for (let obstacle of prev) {
@@ -90,7 +118,7 @@ export default function Obstacle() {
           width: GAME_CONFIG.CHARACTER_SIZE.WIDTH,
           height: GAME_CONFIG.CHARACTER_SIZE.HEIGHT
         }
-        const collisionBuffer = 10
+        const collisionBuffer = 5
         const adjustedObstacleRect = {
           ...obstacleRect,
           x: obstacleRect.x - collisionBuffer,
@@ -100,9 +128,13 @@ export default function Obstacle() {
         }
 
         if (checkCollision(adjustedObstacleRect, characterRect)) {
-          // Mark as hit but don't continue - keep the obstacle
-          obstacle.hit = true
-          setGameState(GAME_STATES.GAME_OVER)
+          // Mark obstacle as hit if you want to style it differently
+          obstacle.hit = true;
+          loserSoundRef.current?.play();
+
+          // Trigger game over, but do NOT continue,
+          // so the obstacle is still added to updatedObstacles
+          setGameState(GAME_STATES.GAME_OVER);
         }
 
         // Keep obstacle if still on screen, regardless of hit state
@@ -112,23 +144,14 @@ export default function Obstacle() {
       }
       return updatedObstacles
     })
-  }, [characterY, setGameState])
+  }, [characterY, setGameState, spawnInterval, resetSpawnInterval, generateObstacle])
 
   useGameLoop(updateObstacles)
-
-  useEffect(() => {
-    const spawnInterval = Math.random() * 
-      (GAME_CONFIG.OBSTACLE_SPAWN_INTERVAL.MAX - GAME_CONFIG.OBSTACLE_SPAWN_INTERVAL.MIN) + 
-      GAME_CONFIG.OBSTACLE_SPAWN_INTERVAL.MIN
-    
-    const intervalId = setInterval(generateObstacle, spawnInterval)
-    return () => clearInterval(intervalId)
-  }, [generateObstacle])
 
   return (
     <ObstacleContainer>
       {obstacles.map(obstacle => {
-        const collisionBuffer = 10
+        const collisionBuffer = 5
         const adjustedX = obstacle.x - collisionBuffer
         const adjustedY = obstacle.y - collisionBuffer
         const adjustedWidth = GAME_CONFIG.OBSTACLE_SIZE.WIDTH + collisionBuffer * 2

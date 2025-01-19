@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import styled from 'styled-components'
 import { useGame } from '../../hooks/useGame'
 import { GAME_STATES } from '../../utils/constants'
@@ -32,7 +32,7 @@ const FinalScore = styled.div`
 `
 
 const RestartPrompt = styled.div`
-  font-family: 'Kid Games', sans-serif;
+  font-family: 'Poxel Font', sans-serif;
   font-size: 1.5rem;
   color: white;
   animation: pulse 1.5s infinite;
@@ -44,10 +44,56 @@ const RestartPrompt = styled.div`
   }
 `
 
+const RestartPromptKid = styled(RestartPrompt)`
+  font-family: 'Kid Games', sans-serif;
+`
+
+const MainMenuButton = styled.button`
+  font-family: 'Poxel Font', sans-serif;
+  font-size: 1.5rem;
+  color: #fff;
+  background-color: #000;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  &:hover {
+    transform: scale(1.1);
+  }
+`
+
 export default function GameOver() {
   const { setGameState, coins, setCoins, setScore } = useGame()
 
+  const [countdown, setCountdown] = useState(3)
+  const [allowRestart, setAllowRestart] = useState(false)
+
+  useEffect(() => {
+    setCountdown(3)
+    setAllowRestart(false)
+
+    const intervalId = setInterval(() => {
+      setCountdown((prevCount) => {
+        if (prevCount <= 1) {
+          clearInterval(intervalId)
+          setAllowRestart(true)
+          return 0
+        }
+        return prevCount - 1
+      })
+    }, 1000)
+
+    return () => clearInterval(intervalId)
+  }, [])
+
+  const handleMainMenu = useCallback(() => {
+    // Reset score/coins and go to main menu
+    setCoins(0)
+    setScore(0)
+    setGameState(GAME_STATES.MENU)
+  }, [setCoins, setScore, setGameState])
+
   const handleKeyPress = useCallback((event) => {
+    if (!allowRestart) return
     if (event.code === 'Space') {
       // Reset all game state
       setCoins(0)
@@ -61,7 +107,7 @@ export default function GameOver() {
         setGameState(GAME_STATES.PLAYING)
       }, 0)
     }
-  }, [setGameState, setCoins, setScore])
+  }, [setGameState, setCoins, setScore, allowRestart])
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress)
@@ -72,7 +118,10 @@ export default function GameOver() {
     <GameOverContainer>
       <GameOverText>GAME OVER</GameOverText>
       <FinalScore>Final Score: {coins} coins</FinalScore>
-      <RestartPrompt>PLAY AGAIN</RestartPrompt>
+      {allowRestart
+        ? <RestartPromptKid>PRESS SPACE TO PLAY AGAIN</RestartPromptKid>
+        : <RestartPrompt>{countdown}</RestartPrompt>}
+      <MainMenuButton onClick={handleMainMenu}>MAIN MENU</MainMenuButton>
     </GameOverContainer>
   )
 }

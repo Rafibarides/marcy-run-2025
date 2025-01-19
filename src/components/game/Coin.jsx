@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { useGame } from '../../hooks/useGame'
 import { GAME_CONFIG } from '../../utils/constants'
@@ -6,6 +6,8 @@ import { checkCollision } from '../../utils/collision'
 import { motion } from 'framer-motion'
 import { useGameLoop } from '../../hooks/useGameLoop'
 import { toCSSPosition } from '../../utils/coordinates'
+import { Howl } from 'howler'
+import { AUDIO } from '../../utils/constants'
 
 const CoinContainer = styled.div`
   position: absolute;
@@ -60,6 +62,17 @@ const CoinCollisionBoundary = styled.div.attrs(props => ({
 export default function Coin() {
   const { characterY, setCoins } = useGame()
   const [coinSets, setCoinSets] = useState([])
+  const coinSoundRef = useRef(null)
+  const timeSinceLastCoinSpawnRef = useRef(0)
+  const [spawnInterval, setSpawnInterval] = useState(null)
+
+  const resetSpawnInterval = useCallback(() => {
+    setSpawnInterval(
+      Math.random() * 
+      (GAME_CONFIG.COIN_SPAWN_INTERVAL.MAX - GAME_CONFIG.COIN_SPAWN_INTERVAL.MIN) + 
+      GAME_CONFIG.COIN_SPAWN_INTERVAL.MIN
+    )
+  }, [])
 
   const generateCoinSet = useCallback(() => {
     const count = Math.random() < 0.5 ? 2 : 3
@@ -78,9 +91,24 @@ export default function Coin() {
     setCoinSets(prev => [...prev, ...newCoins])
   }, [])
 
-  const updateCoins = useCallback(() => {
+  useEffect(() => {
+    coinSoundRef.current = new Howl({
+      src: [`/assets/audio/${AUDIO.COIN_COLLECT}`],
+      volume: 0.5,
+      preload: true
+    })
+    resetSpawnInterval()
+  }, [resetSpawnInterval])
+
+  const updateCoins = useCallback((deltaTime) => {
+    timeSinceLastCoinSpawnRef.current += deltaTime
+    if (spawnInterval && timeSinceLastCoinSpawnRef.current >= spawnInterval) {
+      generateCoinSet()
+      resetSpawnInterval()
+      timeSinceLastCoinSpawnRef.current = 0
+    }
+
     setCoinSets(prev => {
-      // Generate new array of coins
       const updatedCoins = []
       for (let coin of prev) {
         if (coin.collected) continue
@@ -113,6 +141,10 @@ export default function Coin() {
           coin.collected = true
           // Increment coins once
           setCoins(c => c + 1)
+
+          // Play the coin sound
+          coinSoundRef.current?.play()
+
           continue
         }
 
@@ -123,18 +155,9 @@ export default function Coin() {
       }
       return updatedCoins
     })
-  }, [characterY, setCoins])
+  }, [characterY, setCoins, generateCoinSet, spawnInterval, resetSpawnInterval])
 
   useGameLoop(updateCoins)
-
-  useEffect(() => {
-    const spawnInterval = Math.random() * 
-      (GAME_CONFIG.COIN_SPAWN_INTERVAL.MAX - GAME_CONFIG.COIN_SPAWN_INTERVAL.MIN) + 
-      GAME_CONFIG.COIN_SPAWN_INTERVAL.MIN
-    
-    const intervalId = setInterval(generateCoinSet, spawnInterval)
-    return () => clearInterval(intervalId)
-  }, [generateCoinSet])
 
   return (
     <CoinContainer>
