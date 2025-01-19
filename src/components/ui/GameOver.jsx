@@ -59,7 +59,7 @@ export default function GameOver() {
     <GameOverContainer>
       <GameOverText>Game Over!</GameOverText>
       <FinalScore>Final Score: {coins} coins</FinalScore>
-      <RestartPrompt>Hit Space to Play Again</RestartPrompt>
+      <RestartPrompt>PLAY AGAIN</RestartPrompt>
     </GameOverContainer>
   )
 }

@@ -9,6 +9,10 @@ export function GameProvider({ children }) {
   const [coins, setCoins] = useState(0)
   const [selectedCharacter, setSelectedCharacter] = useState(CHARACTERS.BEN)
   const [characterY, setCharacterY] = useState(GAME_CONFIG.GROUND_HEIGHT)
+  const [characterPosition, setCharacterPosition] = useState({
+    x: 50,
+    y: GAME_CONFIG.GROUND_HEIGHT
+  })
 
   const value = {
     gameState,
@@ -20,7 +24,9 @@ export function GameProvider({ children }) {
     selectedCharacter,
     setSelectedCharacter,
     characterY,
-    setCharacterY
+    setCharacterY,
+    characterPosition,
+    setCharacterPosition
   }
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>

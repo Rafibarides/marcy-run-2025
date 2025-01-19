@@ -1,99 +1,154 @@
 import { motion } from 'framer-motion'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import styled from 'styled-components'
 import { useGame } from '../../hooks/useGame'
 import { useGameLoop } from '../../hooks/useGameLoop'
 import { GAME_CONFIG } from '../../utils/constants'
 import { isOnGround } from '../../utils/collision'
 
-const CharacterSprite = styled(motion.img)`
+const CharacterSprite = styled(motion.img).attrs(props => ({
+  style: {
+    bottom: `${props.$y}px`
+  }
+}))`
   position: absolute;
+  width: auto;
+  height: ${GAME_CONFIG.CHARACTER_SIZE.HEIGHT}px;
+  left: 50px;
+  z-index: 4;
+  object-fit: contain;
+  max-width: ${GAME_CONFIG.CHARACTER_SIZE.WIDTH}px;
+`
+
+const DebugBox = styled(motion.div).attrs(props => ({
+  style: {
+    bottom: `${props.$y}px`
+  }
+}))`
+  position: absolute;
+  background-color: rgba(255, 0, 0, 0.2);
+  pointer-events: none;
   width: ${GAME_CONFIG.CHARACTER_SIZE.WIDTH}px;
   height: ${GAME_CONFIG.CHARACTER_SIZE.HEIGHT}px;
   left: 50px;
-  bottom: ${props => props.$y - 70}px;
-  z-index: 4;
+  z-index: 5;
 `
 
 export default function Character() {
   const { selectedCharacter, setCharacterY } = useGame()
-  const [position, setPosition] = useState({ y: GAME_CONFIG.GROUND_HEIGHT })
+  const [position, setPosition] = useState({ y: GAME_CONFIG.GROUND_HEIGHT + GAME_CONFIG.CHARACTER_BASELINE_OFFSET })
   const [velocity, setVelocity] = useState(0)
   const [isJumping, setIsJumping] = useState(false)
-  const initialYRef = useRef(GAME_CONFIG.GROUND_HEIGHT)
+  const [isSpacePressed, setIsSpacePressed] = useState(false)
 
   const updatePhysics = useCallback(() => {
     setPosition(prev => {
       const newY = prev.y + velocity
       
-      // Check if we've reached max jump height
-      const jumpHeight = initialYRef.current - newY
-      if (jumpHeight >= GAME_CONFIG.JUMP_HEIGHT && velocity < 0) {
-        setVelocity(0)
-        return prev
-      }
-
       // Ground collision check
       if (isOnGround({ y: newY, height: GAME_CONFIG.CHARACTER_SIZE.HEIGHT }, GAME_CONFIG.GROUND_HEIGHT)) {
         if (velocity >= 0) {
           setVelocity(0)
           setIsJumping(false)
-          return { y: GAME_CONFIG.GROUND_HEIGHT }
+          return { y: GAME_CONFIG.GROUND_HEIGHT + GAME_CONFIG.CHARACTER_BASELINE_OFFSET }
         }
       }
       
-      setVelocity(prev => prev + GAME_CONFIG.GRAVITY)
-      const finalY = Math.max(newY, GAME_CONFIG.GROUND_HEIGHT)
-      // Update global characterY whenever position changes
-      setCharacterY(finalY)
-      return { y: finalY }
+      // Apply gravity, but not if space is held and we're below max height
+      const maxHeight = GAME_CONFIG.GROUND_HEIGHT + GAME_CONFIG.JUMP_HEIGHT
+      if (isSpacePressed && newY < maxHeight && velocity > -2) {
+        setVelocity(-2) // Maintain small upward velocity for floating
+      } else {
+        setVelocity(prev => prev + GAME_CONFIG.GRAVITY)
+      }
+      
+      return { y: Math.max(newY, GAME_CONFIG.GROUND_HEIGHT + 100 ) }
     })
-  }, [velocity, setCharacterY])
+  }, [velocity, isSpacePressed])
 
   const jump = useCallback(() => {
-    if (isOnGround({ y: position.y, height: GAME_CONFIG.CHARACTER_SIZE.HEIGHT }, GAME_CONFIG.GROUND_HEIGHT)) {
+    if (!isJumping) {
       setVelocity(GAME_CONFIG.JUMP_FORCE)
       setIsJumping(true)
-      initialYRef.current = position.y
     }
-  }, [position.y])
+  }, [isJumping])
 
   useEffect(() => {
-    const handleKeyPress = (event) => {
+    const handleKeyDown = (event) => {
       if (event.code === 'Space') {
+        setIsSpacePressed(true)
         jump()
       }
     }
 
-    window.addEventListener('keydown', handleKeyPress)
-    return () => window.removeEventListener('keydown', handleKeyPress)
+    const handleKeyUp = (event) => {
+      if (event.code === 'Space') {
+        setIsSpacePressed(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
   }, [jump])
 
   useGameLoop(updatePhysics)
 
+  useEffect(() => {
+    setCharacterY(position.y)
+  }, [position.y, setCharacterY])
+
   return (
-    <CharacterSprite
-      src={`/public/assets/images/${selectedCharacter}.png`}
-      alt="character"
-      $y={position.y}
-      animate={{
-        y: isJumping ? -400 : 0,
-        rotate: isJumping ? [-2, 2] : 0
-      }}
-      transition={{
-        y: {
-          type: "spring",
-          stiffness: 200 ,
-          damping: 40 ,
-          mass: 5 
-        },
-        rotate: {
-          duration: 0.5,
-          repeat: isJumping ? Infinity : 0,
-          repeatType: "reverse"
-        }
-      }}
-    />
+    <>
+      <DebugBox
+        $y={position.y}
+        animate={{
+          y: isJumping ? [-200, 0] : 0,
+          scale: isJumping ? [1, 0.95, 1] : 1
+        }}
+        transition={{
+          y: {
+            type: "spring",
+            stiffness: 200,
+            damping: 30,
+            mass: 4
+          },
+          scale: {
+            duration: 0.4
+          }
+        }}
+      />
+      <CharacterSprite
+        src={`/public/assets/images/${selectedCharacter}.png`}
+        alt="character"
+        $y={position.y}
+        animate={{
+          y: isJumping ? [-200, 0] : 0,
+          scale: isJumping ? [1, 0.95, 1] : 1,
+          rotate: isJumping ? [-2, 2] : 0
+        }}
+        transition={{
+          y: {
+            type: "spring",
+            stiffness: 200,
+            damping: 30,
+            mass: 4
+          },
+          scale: {
+            duration: 0.4,
+            ease: "easeInOut"
+          },
+          rotate: {
+            duration: 0.5,
+            repeat: isJumping ? Infinity : 0,
+            repeatType: "reverse"
+          }
+        }}
+      />
+    </>
   )
 }
 

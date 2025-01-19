@@ -1,6 +1,7 @@
 import styled from 'styled-components'
 import { useGame } from '../../hooks/useGame'
 import { useEffect } from 'react'
+import { GAME_STATES } from '../../utils/constants'
 
 const HUDContainer = styled.div`
   position: fixed;
@@ -16,8 +17,7 @@ const HUDContainer = styled.div`
 const GameText = styled.div`
   font-family: 'Poxel Font', sans-serif;
   font-size: 24px;
-  color: gold;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  color: white;
 `
 
 export default function GameHUD() {
@@ -26,7 +26,7 @@ export default function GameHUD() {
   // Update score based on time
   useEffect(() => {
     let scoreInterval
-    if (gameState === 'PLAYING') {
+    if (gameState === GAME_STATES.PLAYING) {
       scoreInterval = setInterval(() => {
         setScore(prevScore => prevScore + 1)
       }, 100) // Increment score every 100ms

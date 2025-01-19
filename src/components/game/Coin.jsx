@@ -8,128 +8,176 @@ import { useGameLoop } from '../../hooks/useGameLoop'
 
 const CoinContainer = styled.div`
   position: absolute;
-  width: 100vw;
-  height: 100vh;
+  width: ${GAME_CONFIG.VIEWPORT.WIDTH}px;
+  height: ${GAME_CONFIG.VIEWPORT.HEIGHT}px;
   pointer-events: none;
   z-index: 2;
-  margin: 0;
-  padding: 0;
 `
 
-const CoinSprite = styled(motion.img)`
+const CoinSprite = styled(motion.img).attrs(props => ({
+  style: {
+    left: `${props.$x}px`,
+    bottom: `${props.$y}px`
+  }
+}))`
   position: absolute;
   width: ${GAME_CONFIG.COIN_SIZE.WIDTH}px;
   height: ${GAME_CONFIG.COIN_SIZE.HEIGHT}px;
-  margin: 0;
-  padding: 0;
-  display: inline-block;
+  z-index: 2;
+`
+
+const DebugBox = styled.div.attrs(props => ({
+  style: {
+    left: `${props.$x}px`,
+    bottom: `${props.$y}px`
+  }
+}))`
+  position: absolute;
+  border: 2px solid blue;
+  background-color: rgba(0, 0, 255, 0.2);
+  pointer-events: none;
+  width: ${GAME_CONFIG.COIN_SIZE.WIDTH}px;
+  height: ${GAME_CONFIG.COIN_SIZE.HEIGHT}px;
+  z-index: 5;
+`
+
+const CoinCollisionBoundary = styled.div.attrs(props => ({
+  style: {
+    left: `${props.$x}px`,
+    bottom: `${props.$y}px`,
+    width: `${props.$width}px`,
+    height: `${props.$height}px`
+  }
+}))`
+  position: absolute;
+  pointer-events: none;
+  border: 2px dashed red;
+  opacity: 0.5;
+  z-index: 10;
 `
 
 export default function Coin() {
-  const { setCoins, characterY } = useGame()
+  const { characterY, setCoins } = useGame()
   const [coinSets, setCoinSets] = useState([])
 
   const generateCoinSet = useCallback(() => {
     const count = Math.random() < 0.5 ? 2 : 3
     const baseX = GAME_CONFIG.VIEWPORT.WIDTH
     const COIN_SPACING = GAME_CONFIG.COIN_SIZE.WIDTH * 2
+    const baseY = GAME_CONFIG.GROUND_HEIGHT + 200
 
-    const coins = Array(count).fill(null).map((_, index) => ({
+    const newCoins = Array(count).fill(null).map((_, index) => ({
       id: Date.now() + index,
       x: baseX + (index * COIN_SPACING),
-      y: GAME_CONFIG.VIEWPORT.HEIGHT - GAME_CONFIG.COIN_VERTICAL_POSITION,
+      y: baseY,
       collected: false
     }))
-    return coins
+
+    // Add new coins to existing ones
+    setCoinSets(prev => [...prev, ...newCoins])
   }, [])
 
-  const spawnCoins = useCallback(() => {
-    const newCoinSet = generateCoinSet()
-    setCoinSets(prev => [...prev, ...newCoinSet])
-  }, [generateCoinSet])
-
-  // Update the coin movement and collision logic
   const updateCoins = useCallback(() => {
     setCoinSets(prev => {
-      let collectedAny = false
-      const updatedCoins = prev.map(coin => {
-        if (coin.collected) return coin
+      // Generate new array of coins
+      const updatedCoins = []
+      for (let coin of prev) {
+        if (coin.collected) continue
 
         const newX = coin.x - GAME_CONFIG.GAME_SPEED
 
-        // Use bottom-based coordinates for both coin and character
         const coinRect = {
           x: newX,
-          y: coin.y - GAME_CONFIG.COIN_SIZE.HEIGHT, // Convert to top for collision check
+          y: coin.y,
           width: GAME_CONFIG.COIN_SIZE.WIDTH,
           height: GAME_CONFIG.COIN_SIZE.HEIGHT
         }
-
         const characterRect = {
           x: 50,
-          y: characterY - GAME_CONFIG.CHARACTER_SIZE.HEIGHT * 0.4 ,
-          width: GAME_CONFIG.CHARACTER_SIZE.WIDTH * 0.4,
-          height: GAME_CONFIG.CHARACTER_SIZE.HEIGHT * 0.4
+          y: characterY,
+          width: GAME_CONFIG.CHARACTER_SIZE.WIDTH,
+          height: GAME_CONFIG.CHARACTER_SIZE.HEIGHT
+        }
+        const collisionBuffer = 10
+        const adjustedCoinRect = {
+          ...coinRect,
+          x: coinRect.x - collisionBuffer,
+          y: coinRect.y - collisionBuffer,
+          width: coinRect.width + collisionBuffer * 2,
+          height: coinRect.height + collisionBuffer * 2
         }
 
-        if (checkCollision(coinRect, characterRect)) {
-          collectedAny = true
-          return { ...coin, collected: true }
-        }
-
-        return { ...coin, x: newX }
-      })
-
-      if (collectedAny) {
-        setTimeout(() => {
+        if (checkCollision(adjustedCoinRect, characterRect)) {
+          // Mark the coin as collected
+          coin.collected = true
+          // Increment coins once
           setCoins(c => c + 1)
-        }, 0)
-        return updatedCoins.filter(coin => !coin.collected)
+          continue
+        }
+
+        // If no collision and coin is still on screen
+        if (newX > -GAME_CONFIG.COIN_SIZE.WIDTH) {
+          updatedCoins.push({ ...coin, x: newX })
+        }
       }
-
-      return updatedCoins.filter(coin => coin.x > -GAME_CONFIG.COIN_SIZE.WIDTH)
+      return updatedCoins
     })
-  }, [setCoins, characterY])
+  }, [characterY, setCoins])
 
-  // Add the game loop for coin updates
   useGameLoop(updateCoins)
 
-  // Spawn coins at intervals
   useEffect(() => {
     const spawnInterval = Math.random() * 
       (GAME_CONFIG.COIN_SPAWN_INTERVAL.MAX - GAME_CONFIG.COIN_SPAWN_INTERVAL.MIN) + 
       GAME_CONFIG.COIN_SPAWN_INTERVAL.MIN
     
-    const intervalId = setInterval(spawnCoins, spawnInterval)
+    const intervalId = setInterval(generateCoinSet, spawnInterval)
     return () => clearInterval(intervalId)
-  }, [spawnCoins])
+  }, [generateCoinSet])
 
   return (
     <CoinContainer>
-      {coinSets.map(coin => (
-        <CoinSprite
-          key={coin.id}
-          src="/public/assets/images/coin.png"
-          alt="coin"
-          style={{ 
-            bottom: coin.y, // Use bottom instead of top
-            position: 'absolute'
-          }}
-          animate={{
-            x: coin.x,
-            y: [0, 20, 0] // Simplified bounce animation
-          }}
-          transition={{
-            x: { duration: 0, ease: "linear" },
-            y: {
-              duration: 1.5,
-              repeat: Infinity,
-              repeatType: "reverse",
-              ease: "easeInOut"
-            }
-          }}
-        />
-      ))}
+      {coinSets.map(coin => {
+        const collisionBuffer = 10
+        // This matches the “adjustedCoinRect” used above
+        const adjustedX = coin.x - collisionBuffer
+        const adjustedY = coin.y - collisionBuffer
+        const adjustedWidth = GAME_CONFIG.COIN_SIZE.WIDTH + collisionBuffer * 2
+        const adjustedHeight = GAME_CONFIG.COIN_SIZE.HEIGHT + collisionBuffer * 2
+
+        return (
+          <div key={coin.id}>
+            {/* Existing debug box (blue) without buffer */}
+            <DebugBox $x={coin.x} $y={coin.y} />
+
+            {/* New debug box (red, dashed) to show the collision area with buffer */}
+            <CoinCollisionBoundary
+              $x={adjustedX}
+              $y={adjustedY}
+              $width={adjustedWidth}
+              $height={adjustedHeight}
+            />
+
+            <CoinSprite
+              src="/public/assets/images/coin.png"
+              alt="coin"
+              $x={coin.x}
+              $y={coin.y}
+              animate={{
+                y: [0, 20, 0]
+              }}
+              transition={{
+                y: {
+                  duration: 1.5,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  ease: "easeInOut"
+                }
+              }}
+            />
+          </div>
+        )
+      })}
     </CoinContainer>
   )
 }

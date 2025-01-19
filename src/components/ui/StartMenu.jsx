@@ -35,12 +35,14 @@ const CharacterSelect = styled.div`
 `
 
 const Character = styled.img`
-  width: 100px;
+  width: auto;
   height: 100px;
   cursor: pointer;
   border: 3px solid ${props => props.$selected ? '#646cff' : 'transparent'};
   border-radius: 10px;
   transition: transform 0.2s;
+  object-fit: contain;
+  max-width: 100px;
 
   &:hover {
     transform: scale(1.1);
@@ -81,7 +83,7 @@ export default function StartMenu() {
           />
         ))}
       </CharacterSelect>
-      <StartPrompt>Hit Space to Start Game</StartPrompt>
+      <StartPrompt>HIT SPACE TO START GAME</StartPrompt>
     </MenuContainer>
   )
 }
