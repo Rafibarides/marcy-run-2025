@@ -25,15 +25,14 @@ export const GAME_CONFIG = {
   },
   COIN_VERTICAL_POSITION: 650,
   OBSTACLE_SIZE: {
-    WIDTH: 50,
-    HEIGHT: 70
+    WIDTH: 100,
+    HEIGHT: 100
   },
   OBSTACLE_SPAWN_INTERVAL: {
-    MIN: 999999999,
-    MAX: 999999999
-    // MIN: 2000,
-    // MAX: 4000
-  }
+    MIN: 2000,  // 2 seconds minimum between obstacles
+    MAX: 4000   // 4 seconds maximum between obstacles
+  },
+  OBSTACLE_BASELINE_OFFSET: -40, // Adjust this to change obstacle height from ground
 }
 
 export const CHARACTERS = {
