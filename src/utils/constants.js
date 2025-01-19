@@ -4,10 +4,10 @@ export const GAME_CONFIG = {
     HEIGHT: 720,  // Base game height
     ASPECT_RATIO: 1280 / 720
   },
-  GRAVITY: 0.3,
+  GRAVITY: 0.2,
   JUMP_FORCE: -20,
   JUMP_HEIGHT: 1000,
-  GAME_SPEED: 5,
+  GAME_SPEED: 7,
   BACKGROUND_SPEED: 0.1,
   GROUND_HEIGHT: 100,
   CHARACTER_BASELINE_OFFSET: -70,
@@ -25,8 +25,8 @@ export const GAME_CONFIG = {
   },
   COIN_VERTICAL_POSITION: 650,
   OBSTACLE_SIZE: {
-    WIDTH: 100,
-    HEIGHT: 100
+    WIDTH: 80,
+    HEIGHT: 80
   },
   OBSTACLE_SPAWN_INTERVAL: {
     MIN: 2000,  // 2 seconds minimum between obstacles

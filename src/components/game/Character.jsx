@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { useGame } from '../../hooks/useGame'
 import { useGameLoop } from '../../hooks/useGameLoop'
 import { GAME_CONFIG } from '../../utils/constants'
-import { isOnGround } from '../../utils/collision'
+// import { isOnGround } from '../../utils/collision'
 
 const CharacterSprite = styled(motion.img).attrs(props => ({
   style: {
@@ -38,54 +38,63 @@ const DebugBox = styled(motion.div).attrs(props => ({
 
 export default function Character() {
   const { selectedCharacter, setCharacterY } = useGame()
-  const [position, setPosition] = useState({ y: GAME_CONFIG.GROUND_HEIGHT + GAME_CONFIG.CHARACTER_BASELINE_OFFSET })
+  const [position, setPosition] = useState({
+    y: GAME_CONFIG.GROUND_HEIGHT + GAME_CONFIG.CHARACTER_BASELINE_OFFSET
+  })
   const [velocity, setVelocity] = useState(0)
   const [isJumping, setIsJumping] = useState(false)
-  const [isSpacePressed, setIsSpacePressed] = useState(false)
+  const [canJump, setCanJump] = useState(true)
+
+  useEffect(() => {
+    // Change your gravity to a negative value in constants, or just do velocity + a negative
+    // E.g., keep GAME_CONFIG.GRAVITY = 0.2, but subtract it from velocity:
+    // velocity => velocity - 0.2
+    // We'll do that below.
+  }, [])
 
   const updatePhysics = useCallback(() => {
     setPosition(prev => {
       const newY = prev.y + velocity
-      
-      // Ground collision check
-      if (isOnGround({ y: newY, height: GAME_CONFIG.CHARACTER_SIZE.HEIGHT }, GAME_CONFIG.GROUND_HEIGHT)) {
-        if (velocity >= 0) {
+
+      // Ground collision if we've dropped below groundHeight
+      // Because we are counting up from the bottom, newY <= ground means we've landed
+      if (newY <= GAME_CONFIG.GROUND_HEIGHT + GAME_CONFIG.CHARACTER_BASELINE_OFFSET) {
+        // If traveling downward, stop the fall
+        if (velocity < 0) {
           setVelocity(0)
           setIsJumping(false)
-          return { y: GAME_CONFIG.GROUND_HEIGHT + GAME_CONFIG.CHARACTER_BASELINE_OFFSET }
+          return {
+            y: GAME_CONFIG.GROUND_HEIGHT + GAME_CONFIG.CHARACTER_BASELINE_OFFSET
+          }
         }
       }
-      
-      // Apply gravity, but not if space is held and we're below max height
-      const maxHeight = GAME_CONFIG.GROUND_HEIGHT + GAME_CONFIG.JUMP_HEIGHT
-      if (isSpacePressed && newY < maxHeight && velocity > -2) {
-        setVelocity(-2) // Maintain small upward velocity for floating
-      } else {
-        setVelocity(prev => prev + GAME_CONFIG.GRAVITY)
-      }
-      
-      return { y: Math.max(newY, GAME_CONFIG.GROUND_HEIGHT + 100 ) }
+
+      // Subtract gravity each update
+      setVelocity(prevVel => prevVel - GAME_CONFIG.GRAVITY)
+
+      return { y: newY }
     })
-  }, [velocity, isSpacePressed])
+  }, [velocity])
 
   const jump = useCallback(() => {
-    if (!isJumping) {
-      setVelocity(GAME_CONFIG.JUMP_FORCE)
+    // Use a positive JUMP_FORCE if you want upward movement
+    if (!isJumping && canJump) {
+      setVelocity(20)  // Example jump force
       setIsJumping(true)
+      setCanJump(false)
     }
-  }, [isJumping])
+  }, [isJumping, canJump])
 
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.code === 'Space') {
-        setIsSpacePressed(true)
         jump()
       }
     }
 
     const handleKeyUp = (event) => {
       if (event.code === 'Space') {
-        setIsSpacePressed(false)
+        setCanJump(true)
       }
     }
 
@@ -108,19 +117,10 @@ export default function Character() {
       <DebugBox
         $y={position.y}
         animate={{
-          y: isJumping ? [-200, 0] : 0,
-          scale: isJumping ? [1, 0.95, 1] : 1
+          scale: isJumping ? [1, 0.95, 1] : 1,
         }}
         transition={{
-          y: {
-            type: "spring",
-            stiffness: 200,
-            damping: 30,
-            mass: 4
-          },
-          scale: {
-            duration: 0.4
-          }
+          scale: { duration: 0.4 }
         }}
       />
       <CharacterSprite
@@ -128,25 +128,18 @@ export default function Character() {
         alt="character"
         $y={position.y}
         animate={{
-          y: isJumping ? [-200, 0] : 0,
           scale: isJumping ? [1, 0.95, 1] : 1,
           rotate: isJumping ? [-2, 2] : 0
         }}
         transition={{
-          y: {
-            type: "spring",
-            stiffness: 200,
-            damping: 30,
-            mass: 4
-          },
           scale: {
-            duration: 0.4,
-            ease: "easeInOut"
+            duration: 0.5,
+            ease: 'easeInOut'
           },
           rotate: {
             duration: 0.5,
             repeat: isJumping ? Infinity : 0,
-            repeatType: "reverse"
+            repeatType: 'reverse'
           }
         }}
       />
