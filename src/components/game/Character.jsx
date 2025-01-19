@@ -77,9 +77,9 @@ export default function Character() {
   }, [velocity])
 
   const jump = useCallback(() => {
-    // Use a positive JUMP_FORCE if you want upward movement
+    // Use a smaller jump force for a lower peak
     if (!isJumping && canJump) {
-      setVelocity(20)  // Example jump force
+      setVelocity(22)  // Slightly lower jump
       setIsJumping(true)
       setCanJump(false)
     }
@@ -118,9 +118,27 @@ export default function Character() {
         $y={position.y}
         animate={{
           scale: isJumping ? [1, 0.95, 1] : 1,
+          y: isJumping ? 0 : [0, -2, 0],
+          rotate: isJumping ? [-2, 2] : [-1, 1],
         }}
         transition={{
-          scale: { duration: 0.4 }
+          scale: {
+            type: 'spring',
+            stiffness: 100,
+            damping: 8,
+          },
+          y: {
+            duration: 0.6,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut"
+          },
+          rotate: {
+            duration: 0.6,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut"
+          }
         }}
       />
       <CharacterSprite
@@ -129,17 +147,26 @@ export default function Character() {
         $y={position.y}
         animate={{
           scale: isJumping ? [1, 0.95, 1] : 1,
-          rotate: isJumping ? [-2, 2] : 0
+          y: isJumping ? 0 : [0, -2, 0],
+          rotate: isJumping ? [-2, 2] : [-1, 1],
         }}
         transition={{
           scale: {
-            duration: 0.5,
-            ease: 'easeInOut'
+            type: 'spring',
+            stiffness: 100,
+            damping: 8,
+          },
+          y: {
+            duration: 0.6,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut"
           },
           rotate: {
-            duration: 0.5,
-            repeat: isJumping ? Infinity : 0,
-            repeatType: 'reverse'
+            duration: 0.6,
+            repeat: Infinity,
+            repeatType: "reverse",
+            ease: "easeInOut"
           }
         }}
       />

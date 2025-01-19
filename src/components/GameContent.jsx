@@ -67,7 +67,7 @@ export function GameContent() {
     <GameContainer>
       <GameScaler $scale={scale}>
         {gameState === GAME_STATES.MENU && <StartMenu />}
-        {gameState === GAME_STATES.PLAYING && (
+        {(gameState === GAME_STATES.PLAYING || gameState === GAME_STATES.GAME_OVER) && (
           <GameArea>
             <Background />
             <Character />
@@ -75,9 +75,9 @@ export function GameContent() {
             <Obstacle />
             <Ground />
             <GameHUD />
+            {gameState === GAME_STATES.GAME_OVER && <GameOver />}
           </GameArea>
         )}
-        {gameState === GAME_STATES.GAME_OVER && <GameOver />}
       </GameScaler>
     </GameContainer>
   )

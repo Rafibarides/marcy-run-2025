@@ -76,8 +76,6 @@ export default function Obstacle() {
     setObstacles(prev => {
       const updatedObstacles = []
       for (let obstacle of prev) {
-        if (obstacle.hit) continue
-
         const newX = obstacle.x - GAME_CONFIG.GAME_SPEED
 
         const obstacleRect = {
@@ -102,12 +100,12 @@ export default function Obstacle() {
         }
 
         if (checkCollision(adjustedObstacleRect, characterRect)) {
+          // Mark as hit but don't continue - keep the obstacle
           obstacle.hit = true
           setGameState(GAME_STATES.GAME_OVER)
-          continue
         }
 
-        // Keep obstacle if still on screen
+        // Keep obstacle if still on screen, regardless of hit state
         if (newX > -GAME_CONFIG.OBSTACLE_SIZE.WIDTH) {
           updatedObstacles.push({ ...obstacle, x: newX })
         }
