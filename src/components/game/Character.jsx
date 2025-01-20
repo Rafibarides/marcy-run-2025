@@ -156,7 +156,7 @@ export default function Character() {
         }}
       />
       <CharacterSprite
-        src={`/public/assets/images/${selectedCharacter}.png`}
+        src={`/assets/images/${selectedCharacter}.png`}
         alt="character"
         $y={position.y}
         animate={{

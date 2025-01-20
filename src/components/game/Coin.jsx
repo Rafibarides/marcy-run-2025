@@ -165,7 +165,7 @@ export default function Coin() {
     <CoinContainer>
       {coinSets.map(coin => {
         const collisionBuffer = 10
-        // This matches the “adjustedCoinRect” used above
+        // This matches the "adjustedCoinRect" used above
         const adjustedX = coin.x - collisionBuffer
         const adjustedY = coin.y - collisionBuffer
         const adjustedWidth = GAME_CONFIG.COIN_SIZE.WIDTH + collisionBuffer * 2
@@ -185,7 +185,7 @@ export default function Coin() {
             />
 
             <CoinSprite
-              src="/public/assets/images/coin.png"
+              src="/assets/images/coin.png"
               alt="coin"
               $x={coin.x}
               $y={coin.y}
