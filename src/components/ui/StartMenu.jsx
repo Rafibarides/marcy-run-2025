@@ -275,7 +275,7 @@ export default function StartMenu() {
                 {locked && (
                   <UnlockInfo>
                     <CostDisplay>
-                      {cost} <img src={getAssetPath('/assets/images/coin.png')} alt="coins" style={{width: '25px', height: '25px'}} />
+                      {cost} <img src={getAssetPath('/assets/images/coin.png')} alt="marcy-coins" style={{width: '25px', height: '25px'}} />
                     </CostDisplay>
                     <UnlockButton onClick={() => handleUnlock(character)}>
                       PURCHASE
