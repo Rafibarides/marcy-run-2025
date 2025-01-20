@@ -40,17 +40,17 @@ const BackgroundImage = styled.div`
   transform: translateX(${props => props.$offset}px);
 `
 
-const Moon = styled.img`
-  position: fixed;
-  width: 70px;
-  height: 70px;
-  top: 15%;
-  right: 15%;
-  z-index: 9999;
-  mix-blend-mode: normal;
-  opacity: ${props => props.$isNightMode ? 1 : 0.05};
-  transition: opacity 0.3s ease;
-`
+// const Moon = styled.img`
+//   position: fixed;
+//   width: 70px;
+//   height: 70px;
+//   top: 15%;
+//   right: 15%;
+//   z-index: 9999;
+//   mix-blend-mode: normal;
+//   opacity: ${props => props.$isNightMode ? 1 : 0.05};
+//   transition: opacity 0.3s ease;
+// `
 
 export default function Background() {
   const offsetRef = useRef(0)
@@ -77,11 +77,11 @@ export default function Background() {
         $offset={0} 
         $isNightMode={isNightMode} 
       />
-      <Moon 
+      {/* <Moon 
         src={getAssetPath('marcy-run-2025/assets/images/moon.png')}
         alt="moon" 
         $isNightMode={isNightMode}
-      />
+      /> */}
     </BackgroundContainer>
   )
 }
