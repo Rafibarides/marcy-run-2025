@@ -1,5 +1,6 @@
 import styled from 'styled-components'
 import { useGame } from '../../hooks/useGame'
+import { getAssetPath } from '../../utils/assetPath'
 
 const MoonSprite = styled.img`
   position: fixed;
@@ -17,7 +18,7 @@ export default function Moon() {
   const { isNightMode } = useGame()
   return (
     <MoonSprite
-      src="public/assets/images/moon.png"
+      src={getAssetPath('/assets/images/moon.png')}
       alt="moon"
       $isNightMode={isNightMode}
     />

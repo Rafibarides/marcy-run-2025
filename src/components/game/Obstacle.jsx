@@ -6,6 +6,7 @@ import { checkCollision } from '../../utils/collision'
 import { motion } from 'framer-motion'
 import { useGameLoop } from '../../hooks/useGameLoop'
 import { Howl } from 'howler'
+import { getAssetPath } from '../../utils/assetPath'
 
 const ObstacleContainer = styled.div`
   position: absolute;
@@ -174,7 +175,7 @@ export default function Obstacle() {
             />
 
             <ObstacleSprite
-              src="public/assets/images/obstacle.png"
+              src={getAssetPath('/assets/images/obstacle.png')}
               alt="obstacle"
               $x={obstacle.x}
               $y={obstacle.y}
