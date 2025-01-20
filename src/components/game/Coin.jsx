@@ -100,8 +100,9 @@ export default function Coin() {
     resetSpawnInterval()
   }, [resetSpawnInterval])
 
-  const updateCoins = useCallback((deltaTime) => {
-    timeSinceLastCoinSpawnRef.current += deltaTime
+  const updateCoins = useCallback((dt) => {
+    // Convert normalized dt back to ms to match spawnInterval
+    timeSinceLastCoinSpawnRef.current += dt * 16.6667
     if (spawnInterval && timeSinceLastCoinSpawnRef.current >= spawnInterval) {
       generateCoinSet()
       resetSpawnInterval()
@@ -113,7 +114,7 @@ export default function Coin() {
       for (let coin of prev) {
         if (coin.collected) continue
 
-        const newX = coin.x - GAME_CONFIG.GAME_SPEED
+        const newX = coin.x - GAME_CONFIG.GAME_SPEED * dt
 
         const coinRect = {
           x: newX,

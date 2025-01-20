@@ -57,8 +57,8 @@ export default function Background() {
   const backgroundRef = useRef(null)
   const { isNightMode } = useGame()
 
-  const scroll = useCallback(() => {
-    offsetRef.current -= GAME_CONFIG.BACKGROUND_SPEED
+  const scroll = useCallback((dt) => {
+    offsetRef.current -= GAME_CONFIG.BACKGROUND_SPEED * dt
     
     // Reset when we've scrolled exactly one scaled background image width
     if (offsetRef.current <= -SCALED_BG_WIDTH) {

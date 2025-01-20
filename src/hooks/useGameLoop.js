@@ -16,7 +16,8 @@ export const useGameLoop = (callback) => {
     previousTimeRef.current = currentTime
 
     if (gameState === GAME_STATES.PLAYING) {
-      callback(deltaTime)
+      const dt = deltaTime / 16.6667; // ~60 fps => dt=1
+      callback(dt)
     }
 
     frameIdRef.current = requestAnimationFrame(loop)

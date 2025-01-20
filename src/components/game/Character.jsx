@@ -53,9 +53,9 @@ export default function Character() {
     // We'll do that below.
   }, [])
 
-  const updatePhysics = useCallback(() => {
+  const updatePhysics = useCallback((dt) => {
     setPosition(prev => {
-      const newY = prev.y + velocity
+      const newY = prev.y + velocity * dt
 
       // Ground collision if we've dropped below groundHeight
       // Because we are counting up from the bottom, newY <= ground means we've landed
@@ -71,7 +71,7 @@ export default function Character() {
       }
 
       // Subtract gravity each update
-      setVelocity(prevVel => prevVel - GAME_CONFIG.GRAVITY)
+      setVelocity(prevVel => prevVel - GAME_CONFIG.GRAVITY * dt)
 
       return { y: newY }
     })
@@ -80,7 +80,7 @@ export default function Character() {
   const jump = useCallback(() => {
     // Use a smaller jump force for a lower peak
     if (!isJumping && canJump) {
-      setVelocity(20)  // Reduced from 22 to make jump height more consistent
+      setVelocity(22)  // Reduced from 22 to make jump height more consistent
       setIsJumping(true)
       setCanJump(false)
     }

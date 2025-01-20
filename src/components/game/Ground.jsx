@@ -39,8 +39,8 @@ export default function Ground() {
   const offsetRef = useRef(0)
   const groundRef = useRef(null)
 
-  const scroll = useCallback(() => {
-    offsetRef.current -= GAME_CONFIG.GAME_SPEED
+  const scroll = useCallback((dt) => {
+    offsetRef.current -= GAME_CONFIG.GAME_SPEED * dt
     
     // Reset when we've scrolled exactly one scaled ground image width
     if (offsetRef.current <= -SCALED_GROUND_WIDTH) {

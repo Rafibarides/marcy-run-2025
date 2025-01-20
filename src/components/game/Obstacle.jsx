@@ -97,8 +97,9 @@ export default function Obstacle() {
     resetSpawnInterval()
   }, [resetSpawnInterval])
 
-  const updateObstacles = useCallback((deltaTime) => {
-    timeSinceLastObstacleSpawnRef.current += deltaTime
+  const updateObstacles = useCallback((dt) => {
+    // Convert normalized dt back to ms for spawn timing
+    timeSinceLastObstacleSpawnRef.current += dt * 16.6667
     if (spawnInterval && timeSinceLastObstacleSpawnRef.current >= spawnInterval) {
       generateObstacle()
       resetSpawnInterval()
@@ -108,7 +109,7 @@ export default function Obstacle() {
     setObstacles(prev => {
       const updatedObstacles = []
       for (let obstacle of prev) {
-        const newX = obstacle.x - GAME_CONFIG.GAME_SPEED
+        const newX = obstacle.x - GAME_CONFIG.GAME_SPEED * dt
 
         const obstacleRect = {
           x: newX,
@@ -122,7 +123,7 @@ export default function Obstacle() {
           width: GAME_CONFIG.CHARACTER_SIZE.WIDTH,
           height: GAME_CONFIG.CHARACTER_SIZE.HEIGHT
         }
-        const collisionBuffer = 5
+        const collisionBuffer = 2
         const adjustedObstacleRect = {
           ...obstacleRect,
           x: obstacleRect.x - collisionBuffer,
@@ -157,7 +158,7 @@ export default function Obstacle() {
   return (
     <ObstacleContainer>
       {obstacles.map(obstacle => {
-        const collisionBuffer = 5
+        const collisionBuffer = 2
         const adjustedX = obstacle.x - collisionBuffer
         const adjustedY = obstacle.y - collisionBuffer
         const adjustedWidth = GAME_CONFIG.OBSTACLE_SIZE.WIDTH + collisionBuffer * 2
