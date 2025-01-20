@@ -50,7 +50,7 @@ export const GAME_STATES = {
 export const AUDIO = {
   BACKGROUND_MUSIC: 'music.mp3',
   COIN_SOUND: 'coin.mp3',
-  LOSER_TRACK: 'loser-track.mp3',
+  GAME_OVER: 'loser-track.mp3',
   BEN_SOUND: 'ben.mp3',
   GONZALO_SOUND: 'gonzalo.mp3',
   MOTUN_SOUND: 'motun.mp3'

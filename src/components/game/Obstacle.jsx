@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import styled from 'styled-components'
 import { useGame } from '../../hooks/useGame'
-import { GAME_CONFIG, GAME_STATES, AUDIO } from '../../utils/constants'
+import { GAME_CONFIG, GAME_STATES } from '../../utils/constants'
 import { checkCollision } from '../../utils/collision'
 import { motion } from 'framer-motion'
 import { useGameLoop } from '../../hooks/useGameLoop'
@@ -87,9 +87,12 @@ export default function Obstacle() {
 
   useEffect(() => {
     loserSoundRef.current = new Howl({
-      src: [`/assets/audio/${AUDIO.GAME_OVER}`],
+      src: [getAssetPath('/assets/audio/loser-track.mp3')],
       volume: 0.5,
-      preload: true
+      preload: true,
+      onloaderror: (id, error) => {
+        console.error('Error loading game over sound:', error)
+      }
     })
     resetSpawnInterval()
   }, [resetSpawnInterval])
@@ -129,19 +132,18 @@ export default function Obstacle() {
         }
 
         if (checkCollision(adjustedObstacleRect, characterRect)) {
-          // Mark obstacle as hit if you want to style it differently
           obstacle.hit = true;
           
-          // Stop any existing playback before playing again
-          loserSoundRef.current?.stop();
-          loserSoundRef.current?.play();
+          if (loserSoundRef.current) {
+            loserSoundRef.current.stop();
+            loserSoundRef.current.play();
+          } else {
+            console.warn('Game over sound not initialized')
+          }
 
-          // Trigger game over, but do NOT continue,
-          // so the obstacle is still added to updatedObstacles
           setGameState(GAME_STATES.GAME_OVER);
         }
 
-        // Keep obstacle if still on screen, regardless of hit state
         if (newX > -GAME_CONFIG.OBSTACLE_SIZE.WIDTH) {
           updatedObstacles.push({ ...obstacle, x: newX })
         }
@@ -163,10 +165,8 @@ export default function Obstacle() {
 
         return (
           <div key={obstacle.id}>
-            {/* Debug box (red) without buffer */}
             <DebugBox $x={obstacle.x} $y={obstacle.y} />
 
-            {/* Debug box (orange, dashed) to show collision area with buffer */}
             <ObstacleCollisionBoundary
               $x={adjustedX}
               $y={adjustedY}
