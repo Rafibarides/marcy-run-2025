@@ -5,7 +5,7 @@ import App from './App.jsx'
 
 // Add the easter egg console message
 console.log(
-  "%c👀 Hey you! Stop looking at my code! 🚫\n" +
+  "%c👀 Hey you!!! Stop looking at my code! 🚫\n" +
   "%cNothing to see here... 🙈\n" +
   "%c(but since you're here, feel free to check out my linkedIn https://www.linkedin.com/in/rafibarides/) 🎮",
   "color: #ff6b6b; font-size: 20px; font-weight: bold;",
