@@ -3,8 +3,11 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/marcy-run-2025/',
   plugins: [react()],
+  base: '/marcy-run-2025/',
+  build: {
+    outDir: 'dist',
+  }
 })
 
 // export default defineConfig({
