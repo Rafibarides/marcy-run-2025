@@ -4,8 +4,8 @@ export const GAME_CONFIG = {
     HEIGHT: 720,  // Base game height
     ASPECT_RATIO: 1280 / 720
   },
-  GRAVITY: 0.5,
-  JUMP_FORCE: -17,
+  GRAVITY: 0.6,
+  JUMP_FORCE: -18,
   JUMP_HEIGHT: 10000,
   GAME_SPEED: 12,
   BACKGROUND_SPEED: 0.1,
