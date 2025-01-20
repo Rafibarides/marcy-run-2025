@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useMemo } from 'react'
 import styled from 'styled-components'
 import { useGame } from '../../hooks/useGame'
 import { GAME_STATES, CHARACTERS } from '../../utils/constants'
@@ -6,50 +6,72 @@ import { motion } from 'framer-motion'
 import { Howl } from 'howler'
 import { getAssetPath } from '../../utils/assetPath'
 
+// Extract critical styles to reduce style calculation time
 const MenuContainer = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  width: 100%;
   height: 100%;
-  gap: 2rem;
-  background-image: url(${props => getAssetPath(props.backgroundImage)});
-  background-position: center;
-  background-repeat: no-repeat;
+  background-image: url(${props => props.style?.backgroundImage});
   background-size: cover;
+  background-position: center;
   position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    z-index: 1;
-  }
+  z-index: 1000;
+  /* Add will-change to optimize the background-image rendering */
+  will-change: background-image;
 `
 
+// Optimize content wrapper performance
 const ContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 2rem;
-  z-index: 2;
-  opacity: 1;
-  visibility: visible;
+  padding: 2rem;
+  /* Add containment for better performance */
+  contain: layout style;
+  ${props => props.$isMobile && `
+    width: 100%;
+    height: 100%;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 4rem 2rem;
+    max-width: 100vw;
+    overflow: hidden;
+  `}
 `
 
 const Logo = styled.img`
-  width: 300px;
+  width: ${props => props.$isMobile ? '100px' : '300px'};
   height: auto;
+  aspect-ratio: 1652/836;  /* Based on the original logo dimensions (1652x836) */
+  ${props => props.$isMobile && `
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+  `}
 `
 
 const StartPrompt = styled.div`
   font-family: 'Kid Games', sans-serif;
-  font-size: 2rem;
+  font-size: ${props => props.$isMobile ? '1.5rem' : '2rem'};
+  text-align: center;
   animation: pulse 1.5s infinite;
+  ${props => props.$isMobile && `
+    flex: 1;
+    max-width: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+  `}
 
   @keyframes pulse {
     0% { opacity: 1; }
@@ -64,16 +86,16 @@ const CharacterSelect = styled.div`
   align-items: center;
   overflow-x: hidden;
   overflow-y: visible;
-  width: 500px;
-  height: 350px;
+  width: ${props => props.$isMobile ? '350px' : '500px'};
+  height: ${props => props.$isMobile ? '300px' : '350px'};
   position: relative;
   gap: 0;
 `
 
 const Character = styled(motion.img)`
-  width: 175px;
-  height: 175px;
-  max-width: 175px;
+  width: ${props => props.$isMobile ? '100px' : '175px'};
+  height: ${props => props.$isMobile ? '100px' : '175px'};
+  max-width: ${props => props.$isMobile ? '100px' : '175px'};
   cursor: pointer;
   border: 3px solid ${props => props.$selected ? '#646cff' : 'transparent'};
   border-radius: 10px;
@@ -88,11 +110,13 @@ const Character = styled(motion.img)`
 const UnlockInfo = styled.div`
   font-family: 'Poxel Font', sans-serif;
   color: white;
-  margin-top: 0.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
+  ${props => props.$isMobile && `
+    transform: scale(0.8);
+  `}
 `
 
 const UnlockButton = styled.button`
@@ -115,6 +139,10 @@ const CostDisplay = styled.span`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  img {
+    width: ${props => props.$isMobile ? '20px' : '25px'};
+    height: ${props => props.$isMobile ? '20px' : '25px'};
+  }
 `
 
 const LockOverlay = styled.img`
@@ -130,7 +158,11 @@ const LockOverlay = styled.img`
 
 const CharacterWrapper = styled.div`
   position: relative;
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 `
 
 const CHARACTER_COSTS = {
@@ -155,6 +187,12 @@ const characterAudioMap = {
 }
 
 export default function StartMenu() {
+  // Basic check for mobile devices
+  const isMobile = useMemo(
+    () => /Mobi|Android/i.test(navigator.userAgent),
+    []
+  )
+
   const {
     setGameState,
     selectedCharacter, setSelectedCharacter,
@@ -214,6 +252,15 @@ export default function StartMenu() {
     }
   }
 
+  const handleMobileTap = () => {
+    if (unlockedCharacters.includes(selectedCharacter)) {
+      setScore(0)
+      setGameState(GAME_STATES.PLAYING)
+    } else {
+      alert("This character is locked. Unlock it first!")
+    }
+  }
+
   // Add event listener for space key
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress)
@@ -222,19 +269,23 @@ export default function StartMenu() {
 
   return (
     <MenuContainer
-      style={{
-        backgroundImage: `url(${getAssetPath('/assets/images/menu.png')})`
-      }}
+      style={{ backgroundImage: `url(${getAssetPath('/assets/images/menu.avif')})` }}
     >
-      <ContentWrapper>
-        <Logo src={getAssetPath('/assets/images/logo.png')} alt="Marcy Run" />
-        <CharacterSelect>
+      <ContentWrapper $isMobile={isMobile}>
+        <Logo 
+          src={getAssetPath('/assets/images/logo.avif')} 
+          alt="Marcy Run" 
+          $isMobile={isMobile}
+          width={isMobile ? "100" : "300"}
+          height={isMobile ? "51" : "152"}  // Maintains the original aspect ratio
+        />
+        <CharacterSelect $isMobile={isMobile}>
           {characters.map((character, index) => {
             const locked = !unlockedCharacters.includes(character)
             const cost = CHARACTER_COSTS[character] || 0
 
             const difference = index - selectedIndex
-            const xOffset = difference * 180
+            const xOffset = difference * (isMobile ? 100 : 180)
             const scale = difference === 0 ? 1.1 : 0.75
             const opacity = difference === 0 ? 1 : 0.5
 
@@ -261,21 +312,22 @@ export default function StartMenu() {
               >
                 <CharacterWrapper>
                   <Character
-                    src={getAssetPath(`/assets/images/${character}.png`)}
+                    src={getAssetPath(`/assets/images/${character}.avif`)}
                     alt={character}
                     $selected={selectedCharacter === character}
+                    $isMobile={isMobile}
                   />
                   {locked && (
                     <LockOverlay
-                      src={getAssetPath('/assets/images/lock.png')}
+                      src={getAssetPath('/assets/images/lock.avif')}
                       alt="locked"
                     />
                   )}
                 </CharacterWrapper>
                 {locked && (
-                  <UnlockInfo>
+                  <UnlockInfo $isMobile={isMobile}>
                     <CostDisplay>
-                      {cost} <img src={getAssetPath('/assets/images/coin.png')} alt="marcy-coins" style={{width: '25px', height: '25px'}} />
+                      {cost} <img src={getAssetPath('/assets/images/coin.avif')} alt="marcy-coins" />
                     </CostDisplay>
                     <UnlockButton onClick={() => handleUnlock(character)}>
                       PURCHASE
@@ -286,8 +338,13 @@ export default function StartMenu() {
             )
           })}
         </CharacterSelect>
-        <StartPrompt>
-          HIT SPACE TO START GAME
+        <StartPrompt 
+          $isMobile={isMobile}
+          onClick={isMobile ? () => {
+            handleMobileTap();
+          } : undefined}
+        >
+          {isMobile ? 'TAP TO START GAME' : 'HIT SPACE TO START GAME'}
           {unlockedCharacters.includes(selectedCharacter) ? '' : ' (LOCKED)'}
         </StartPrompt>
       </ContentWrapper>

@@ -5,10 +5,32 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="./assets/images/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Preload critical assets -->
+    <link 
+      rel="preload" 
+      href="./assets/images/menu.avif" 
+      as="image" 
+      type="image/avif"
+    />
+    <!-- Preload critical fonts -->
+    <link 
+      rel="preload" 
+      href="./assets/fonts/KidGames.ttf" 
+      as="font" 
+      type="font/ttf" 
+      crossorigin
+    />
+    <link 
+      rel="preload" 
+      href="./assets/fonts/PoxelFont.ttf" 
+      as="font" 
+      type="font/ttf" 
+      crossorigin
+    />
     <title>Marcy Run</title>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="./src/main.jsx"></script>
+    <script type="module" defer src="./src/main.jsx"></script>
   </body>
 </html>

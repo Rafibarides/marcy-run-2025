@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useState, useMemo } from 'react'
 import styled from 'styled-components'
 import { useGame } from '../../hooks/useGame'
 import { GAME_STATES } from '../../utils/constants'
@@ -44,24 +44,37 @@ const RestartPrompt = styled.div`
   }
 `
 
-const RestartPromptKid = styled(RestartPrompt)`
+const RestartPromptKid = styled.div`
   font-family: 'Kid Games', sans-serif;
+  font-size: 2rem;
+  text-align: center;
+  ${props => props.$isMobile && `
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+  `}
 `
 
 const MainMenuButton = styled.button`
-  font-family: 'Poxel Font', sans-serif;
+  font-family: 'Kid Games', sans-serif;
   font-size: 1.5rem;
-  color: #fff;
-  background-color: #000;
+  padding: 1rem 2rem;
   border: none;
+  border-radius: 10px;
+  background-color: #646cff;
+  color: white;
   cursor: pointer;
-  transition: transform 0.3s ease;
+  transition: background-color 0.2s;
+  position: relative;
+  z-index: 1001;
+
   &:hover {
-    transform: scale(1.1);
+    background-color: #535bf2;
   }
 `
 
 export default function GameOver() {
+  const isMobile = useMemo(() => /Mobi|Android/i.test(navigator.userAgent), [])
   const { setGameState, coins, setScore } = useGame()
 
   const [countdown, setCountdown] = useState(3)
@@ -94,18 +107,25 @@ export default function GameOver() {
   const handleKeyPress = useCallback((event) => {
     if (!allowRestart) return
     if (event.code === 'Space') {
-      // Reset all game state except coins
+      // FULL RESTART LOGIC
       setScore(0)
-      
-      // Force a re-render of game components by changing state to MENU briefly
+      // Force a brief return to MENU
       setGameState(GAME_STATES.MENU)
-      
-      // Small timeout to ensure clean reset
+      // Then set to PLAYING to start fresh
       setTimeout(() => {
         setGameState(GAME_STATES.PLAYING)
       }, 0)
     }
-  }, [setGameState, setScore, allowRestart])
+  }, [allowRestart, setScore, setGameState])
+
+  const handleMobileTap = useCallback(() => {
+    if (!allowRestart) return
+    setScore(0)
+    setGameState(GAME_STATES.MENU)
+    setTimeout(() => {
+      setGameState(GAME_STATES.PLAYING)
+    }, 0)
+  }, [allowRestart, setScore, setGameState])
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress)
@@ -113,13 +133,30 @@ export default function GameOver() {
   }, [handleKeyPress])
 
   return (
-    <GameOverContainer>
+    <GameOverContainer onClick={isMobile ? handleMobileTap : undefined}>
       <GameOverText>GAME OVER</GameOverText>
       <FinalScore>{coins} coins</FinalScore>
-      {allowRestart
-        ? <RestartPromptKid>PRESS SPACE TO PLAY AGAIN</RestartPromptKid>
-        : <RestartPrompt>{countdown}</RestartPrompt>}
-      <MainMenuButton onClick={handleMainMenu}>MAIN MENU</MainMenuButton>
+      {allowRestart ? (
+        <RestartPromptKid 
+          $isMobile={isMobile}
+          onClick={isMobile ? (e) => {
+            e.stopPropagation();
+            handleMobileTap();
+          } : undefined}
+        >
+          {isMobile ? 'TAP TO PLAY AGAIN' : 'PRESS SPACE TO PLAY AGAIN'}
+        </RestartPromptKid>
+      ) : (
+        <RestartPrompt>{countdown}</RestartPrompt>
+      )}
+      <MainMenuButton 
+        onClick={(e) => {
+          e.stopPropagation();
+          handleMainMenu();
+        }}
+      >
+        MAIN MENU
+      </MainMenuButton>
     </GameOverContainer>
   )
 }

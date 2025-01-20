@@ -7,10 +7,12 @@ import App from './App.jsx'
 console.log(
   "%c👀 Hey you!!! Stop looking at my code! 🚫\n" +
   "%cNothing to see here... 🙈\n" +
-  "%c(but since you're here, feel free to check out my linkedIn https://www.linkedin.com/in/rafibarides/) 🎮 :)",
+  "%c(but since you're here, feel free to check out my linkedIn https://www.linkedin.com/in/rafibarides/) 🎮 :)\n" +
+  "%c(psst... use arrow keys to navigate characters and 'n' to toggle dark mode)",
   "color: #ff6b6b; font-size: 20px; font-weight: bold;",
   "color: #4ecdc4; font-size: 16px; font-style: italic;",
-  "color: #95a5a6; font-size: 14px;"
+  "color: #95a5a6; font-size: 14px;",
+  "color: #95a5a6; font-size: 12px; font-style: italic;"
 )
 
 createRoot(document.getElementById('root')).render(

@@ -32,8 +32,8 @@ const BackgroundImage = styled.div`
   /* Use scaled width × 2 for perfect tiling while maintaining aspect ratio */
   width: ${SCALED_BG_WIDTH * 2}px;
   background-image: url(${props => props.$isNightMode 
-    ? getAssetPath('/assets/images/background-night.jpg') 
-    : getAssetPath('/assets/images/background.jpg')});
+    ? getAssetPath('/assets/images/background-night.avif') 
+    : getAssetPath('/assets/images/background.avif')});
   background-repeat: repeat-x;
   /* Use exact sizing to maintain aspect ratio */
   background-size: ${SCALED_BG_WIDTH}px 100%;

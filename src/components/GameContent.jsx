@@ -1,20 +1,11 @@
+import { lazy, Suspense } from 'react'
 import styled from 'styled-components'
 import { useGame } from '../hooks/useGame'
-import StartMenu from './ui/StartMenu'
-import GameOver from './ui/GameOver'
-import GameHUD from './ui/GameHUD'
-import Character from './game/Character'
-import Ground from './game/Ground'
-import Background from './game/Background'
-import Coin from './game/Coin'
-import Obstacle from './game/Obstacle'
 import { GAME_STATES, GAME_CONFIG } from '../utils/constants'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import LoadingScreen from './ui/LoadingScreen'
 import { useAudio } from '../hooks/useAudio'
 import { Howl } from 'howler'
-import NightMode from './ui/NightMode'
-import Moon from './game/Moon'
 import { getAssetPath } from '../utils/assetPath'
 
 const GameContainer = styled.div`
@@ -29,10 +20,17 @@ const GameContainer = styled.div`
 
 const GameScaler = styled.div`
   position: relative;
-  width: ${GAME_CONFIG.VIEWPORT.WIDTH}px;
-  height: ${GAME_CONFIG.VIEWPORT.HEIGHT}px;
-  transform: scale(${props => props.$scale});
-  transform-origin: center center;
+  /* Only override scaling for menu state on mobile */
+  ${props => props.$isMobile && props.$gameState === GAME_STATES.MENU ? `
+    width: 100vw;
+    height: 100vh;
+    transform: none;
+  ` : `
+    width: ${GAME_CONFIG.VIEWPORT.WIDTH}px;
+    height: ${GAME_CONFIG.VIEWPORT.HEIGHT}px;
+    transform: scale(${props.$scale});
+    transform-origin: center center;
+  `}
 `
 
 const GameArea = styled.div`
@@ -55,9 +53,22 @@ const preloadFont = (fontFamily) => {
   return document.fonts.load(`1em ${fontFamily}`)
 }
 
+// Lazy load components
+const StartMenu = lazy(() => import('./ui/StartMenu'))
+const GameOver = lazy(() => import('./ui/GameOver'))
+const GameHUD = lazy(() => import('./ui/GameHUD'))
+const Character = lazy(() => import('./game/Character'))
+const Ground = lazy(() => import('./game/Ground'))
+const Background = lazy(() => import('./game/Background'))
+const Coin = lazy(() => import('./game/Coin'))
+const Obstacle = lazy(() => import('./game/Obstacle'))
+const NightMode = lazy(() => import('./ui/NightMode'))
+const Moon = lazy(() => import('./game/Moon'))
+
 export function GameContent() {
   const { gameState, assetsLoaded, setAssetsLoaded } = useGame()
   const [scale, setScale] = useState(1)
+  const isMobile = useMemo(() => /Mobi|Android/i.test(navigator.userAgent), [])
   useAudio()
 
   useEffect(() => {
@@ -88,17 +99,17 @@ export function GameContent() {
       try {
         // Preload all images
         const imagePromises = [
-          getAssetPath('/assets/images/menu.png'),
-          getAssetPath('/assets/images/logo.png'),
-          getAssetPath('/assets/images/background.jpg'),
-          getAssetPath('/assets/images/background-night.jpg'),
-          getAssetPath('/assets/images/ground.png'),
-          getAssetPath('/assets/images/moon.png'),
-          getAssetPath('/assets/images/obstacle.png'),
-          getAssetPath('/assets/images/coin.png'),
-          getAssetPath('/assets/images/ben.png'),
-          getAssetPath('/assets/images/gonzalo.png'),
-          getAssetPath('/assets/images/motun.png')
+          getAssetPath('/assets/images/menu.avif'),
+          getAssetPath('/assets/images/logo.avif'),
+          getAssetPath('/assets/images/background.avif'),
+          getAssetPath('/assets/images/background-night.avif'),
+          getAssetPath('/assets/images/ground.avif'),
+          getAssetPath('/assets/images/moon.avif'),
+          getAssetPath('/assets/images/obstacle.avif'),
+          getAssetPath('/assets/images/coin.avif'),
+          getAssetPath('/assets/images/ben.avif'),
+          getAssetPath('/assets/images/gonzalo.avif'),
+          getAssetPath('/assets/images/motun.avif')
         ].map(preloadImage)
 
         // Preload fonts
@@ -182,21 +193,38 @@ export function GameContent() {
 
   return (
     <GameContainer>
-      <GameScaler $scale={scale}>
-        {gameState === GAME_STATES.MENU && <StartMenu />}
-        {(gameState === GAME_STATES.PLAYING || gameState === GAME_STATES.GAME_OVER) && (
-          <GameArea>
-            <Background />
-            <NightMode />
-            <Moon />
-            <Character />
-            <Ground />
-            <Coin />
-            <Obstacle />
-          </GameArea>
-        )}
-        <GameHUD />
-        {gameState === GAME_STATES.GAME_OVER && <GameOver />}
+      <GameScaler 
+        $scale={scale} 
+        $isMobile={isMobile}
+        $gameState={gameState}
+      >
+        {/* Split Suspense boundaries to prioritize menu loading */}
+        <Suspense fallback={
+          <div style={{
+            backgroundImage: `url(${getAssetPath('/assets/images/menu.avif')})`,
+            width: '100%',
+            height: '100%',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}/>
+        }>
+          {gameState === GAME_STATES.MENU && <StartMenu />}
+        </Suspense>
+        <Suspense fallback={<LoadingScreen />}>
+          {(gameState === GAME_STATES.PLAYING || gameState === GAME_STATES.GAME_OVER) && (
+            <GameArea>
+              <Background />
+              <NightMode />
+              <Moon />
+              <Character />
+              <Ground />
+              <Coin />
+              <Obstacle />
+            </GameArea>
+          )}
+          <GameHUD />
+          {gameState === GAME_STATES.GAME_OVER && <GameOver />}
+        </Suspense>
       </GameScaler>
     </GameContainer>
   )

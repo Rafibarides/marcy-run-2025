@@ -127,6 +127,8 @@ export default function Character() {
     setCharacterY(position.y)
   }, [position.y, setCharacterY])
 
+  const spritePath = getAssetPath(`/assets/images/${selectedCharacter}.avif`)
+
   return (
     <>
       <DebugBox
@@ -157,7 +159,7 @@ export default function Character() {
         }}
       />
       <CharacterSprite
-        src={getAssetPath(`/assets/images/${selectedCharacter}.png`)}
+        src={spritePath}
         alt="character"
         $y={position.y}
         animate={{

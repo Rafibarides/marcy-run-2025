@@ -183,7 +183,7 @@ export default function Coin() {
             />
 
             <CoinSprite
-              src={getAssetPath('/assets/images/coin.png')}
+              src="/assets/images/coin.avif"
               alt="coin"
               $x={coin.x}
               $y={coin.y}

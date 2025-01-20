@@ -28,7 +28,7 @@ const GroundImage = styled.div`
   height: 100%;
   /* Use scaled width × 2 for perfect tiling while maintaining aspect ratio */
   width: ${SCALED_GROUND_WIDTH * 2}px;
-  background-image: url(${getAssetPath('/assets/images/ground.png')});
+  background-image: url(${getAssetPath('/assets/images/ground.avif')});
   background-repeat: repeat-x;
   /* Use cover to maintain aspect ratio */
   background-size: ${SCALED_GROUND_WIDTH}px 100%;
