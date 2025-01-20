@@ -86,7 +86,7 @@ Contributions are welcome! Feel free to fork the repository and submit a pull re
 This project is licensed under the MIT License. See `LICENSE` for details.
 
 ## Contact
-For questions, suggestions, or feedback, please contact **Rafi Barides** at [rafibaridesmusic@gmail.com](mailto:rafibaridesmusic@gmail.com).
+For questions, suggestions, or any feedback, please contact **Rafi Barides** at [rafibaridesmusic@gmail.com](mailto:rafibaridesmusic@gmail.com).
 
 ---
 Thank you for checking out **Marcy Run**! Enjoy the game and have fun!
