@@ -78,7 +78,7 @@ export default function Background() {
         $isNightMode={isNightMode} 
       />
       <Moon 
-        src={getAssetPath('/assets/images/moon.png')}
+        src={getAssetPath('marcy-run-2025/assets/images/moon.png')}
         alt="moon" 
         $isNightMode={isNightMode}
       />

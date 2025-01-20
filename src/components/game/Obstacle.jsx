@@ -174,7 +174,7 @@ export default function Obstacle() {
             />
 
             <ObstacleSprite
-              src="/assets/images/obstacle.png"
+              src="public/assets/images/obstacle.png"
               alt="obstacle"
               $x={obstacle.x}
               $y={obstacle.y}

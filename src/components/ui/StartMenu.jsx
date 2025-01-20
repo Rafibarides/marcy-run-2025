@@ -140,9 +140,18 @@ const CHARACTER_COSTS = {
 
 // Replace the old map of raw file paths with Howl instances:
 const characterAudioMap = {
-  [CHARACTERS.BEN]: new Howl({ src: ['/assets/audio/ben.mp3'], volume: 0.3 }),
-  [CHARACTERS.GONZALO]: new Howl({ src: ['/assets/audio/gonzalo.mp3'], volume: 0.3 }),
-  [CHARACTERS.MOTUN]: new Howl({ src: ['/assets/audio/motun.mp3'], volume: 0.3 })
+  [CHARACTERS.BEN]: new Howl({ 
+    src: [getAssetPath('/assets/audio/ben.mp3')], 
+    volume: 0.3 
+  }),
+  [CHARACTERS.GONZALO]: new Howl({ 
+    src: [getAssetPath('/assets/audio/gonzalo.mp3')], 
+    volume: 0.3 
+  }),
+  [CHARACTERS.MOTUN]: new Howl({ 
+    src: [getAssetPath('/assets/audio/motun.mp3')], 
+    volume: 0.3 
+  })
 }
 
 export default function StartMenu() {

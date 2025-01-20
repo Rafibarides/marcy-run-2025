@@ -17,7 +17,7 @@ export default function Moon() {
   const { isNightMode } = useGame()
   return (
     <MoonSprite
-      src="/assets/images/moon.png"
+      src="public/assets/images/moon.png"
       alt="moon"
       $isNightMode={isNightMode}
     />
