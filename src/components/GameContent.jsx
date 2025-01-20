@@ -15,6 +15,7 @@ import { useAudio } from '../hooks/useAudio'
 import { Howl } from 'howler'
 import NightMode from './ui/NightMode'
 import Moon from './game/Moon'
+import { getAssetPath } from '../utils/assetPath'
 
 const GameContainer = styled.div`
   width: 100vw;
@@ -87,17 +88,17 @@ export function GameContent() {
       try {
         // Preload all images
         const imagePromises = [
-          '/assets/images/menu.png',
-          '/assets/images/logo.png',
-          '/assets/images/background.jpg',
-          '/assets/images/background-night.jpg',
-          '/assets/images/ground.png',
-          '/assets/images/moon.png',
-          '/assets/images/obstacle.png',
-          '/assets/images/coin.png',
-          '/assets/images/ben.png',
-          '/assets/images/gonzalo.png',
-          '/assets/images/motun.png'
+          getAssetPath('/assets/images/menu.png'),
+          getAssetPath('/assets/images/logo.png'),
+          getAssetPath('/assets/images/background.jpg'),
+          getAssetPath('/assets/images/background-night.jpg'),
+          getAssetPath('/assets/images/ground.png'),
+          getAssetPath('/assets/images/moon.png'),
+          getAssetPath('/assets/images/obstacle.png'),
+          getAssetPath('/assets/images/coin.png'),
+          getAssetPath('/assets/images/ben.png'),
+          getAssetPath('/assets/images/gonzalo.png'),
+          getAssetPath('/assets/images/motun.png')
         ].map(preloadImage)
 
         // Preload fonts
@@ -110,7 +111,7 @@ export function GameContent() {
         const audioPromises = [
           new Promise((resolve, reject) => {
             new Howl({
-              src: ['/assets/audio/coin.mp3'],
+              src: [getAssetPath('/assets/audio/coin.mp3')],
               preload: true,
               onload: () => resolve(),
               onloaderror: (_, err) => reject(err)
@@ -118,7 +119,7 @@ export function GameContent() {
           }),
           new Promise((resolve, reject) => {
             new Howl({
-              src: ['/assets/audio/loser-track.mp3'],
+              src: [getAssetPath('/assets/audio/loser-track.mp3')],
               preload: true,
               onload: () => resolve(),
               onloaderror: (_, err) => reject(err)

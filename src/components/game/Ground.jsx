@@ -2,6 +2,7 @@ import styled from 'styled-components'
 import { useRef, useCallback } from 'react'
 import { useGameLoop } from '../../hooks/useGameLoop'
 import { GAME_CONFIG } from '../../utils/constants'
+import { getAssetPath } from '../../utils/assetPath'
 
 // Original image dimensions from roadmap
 const GROUND_IMAGE_WIDTH = 8647
@@ -27,7 +28,7 @@ const GroundImage = styled.div`
   height: 100%;
   /* Use scaled width × 2 for perfect tiling while maintaining aspect ratio */
   width: ${SCALED_GROUND_WIDTH * 2}px;
-  background-image: url('/assets/images/ground.png');
+  background-image: url(${getAssetPath('/assets/images/ground.png')});
   background-repeat: repeat-x;
   /* Use cover to maintain aspect ratio */
   background-size: ${SCALED_GROUND_WIDTH}px 100%;

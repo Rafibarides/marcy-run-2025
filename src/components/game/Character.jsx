@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import { useGame } from '../../hooks/useGame'
 import { useGameLoop } from '../../hooks/useGameLoop'
 import { GAME_CONFIG } from '../../utils/constants'
+import { getAssetPath } from '../../utils/assetPath'
 // import { isOnGround } from '../../utils/collision'
 
 const CharacterSprite = styled(motion.img).attrs(props => ({
@@ -156,7 +157,7 @@ export default function Character() {
         }}
       />
       <CharacterSprite
-        src={`/assets/images/${selectedCharacter}.png`}
+        src={getAssetPath(`/assets/images/${selectedCharacter}.png`)}
         alt="character"
         $y={position.y}
         animate={{

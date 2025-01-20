@@ -8,6 +8,7 @@ import { useGameLoop } from '../../hooks/useGameLoop'
 import { toCSSPosition } from '../../utils/coordinates'
 import { Howl } from 'howler'
 import { AUDIO } from '../../utils/constants'
+import { getAssetPath } from '../../utils/assetPath'
 
 const CoinContainer = styled.div`
   position: absolute;
@@ -185,7 +186,7 @@ export default function Coin() {
             />
 
             <CoinSprite
-              src="/assets/images/coin.png"
+              src={getAssetPath('/assets/images/coin.png')}
               alt="coin"
               $x={coin.x}
               $y={coin.y}

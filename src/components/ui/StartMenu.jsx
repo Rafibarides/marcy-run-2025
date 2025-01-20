@@ -4,6 +4,7 @@ import { useGame } from '../../hooks/useGame'
 import { GAME_STATES, CHARACTERS } from '../../utils/constants'
 import { motion } from 'framer-motion'
 import { Howl } from 'howler'
+import { getAssetPath } from '../../utils/assetPath'
 
 const MenuContainer = styled.div`
   display: flex;
@@ -12,7 +13,7 @@ const MenuContainer = styled.div`
   justify-content: center;
   height: 100%;
   gap: 2rem;
-  background-image: url('/assets/images/menu.png');
+  background-image: url(${props => getAssetPath(props.backgroundImage)});
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -211,9 +212,13 @@ export default function StartMenu() {
   }, [handleKeyPress])
 
   return (
-    <MenuContainer>
+    <MenuContainer
+      style={{
+        backgroundImage: `url(${getAssetPath('/assets/images/menu.png')})`
+      }}
+    >
       <ContentWrapper>
-        <Logo src="/assets/images/logo.png" alt="Marcy Run" />
+        <Logo src={getAssetPath('/assets/images/logo.png')} alt="Marcy Run" />
         <CharacterSelect>
           {characters.map((character, index) => {
             const locked = !unlockedCharacters.includes(character)

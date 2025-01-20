@@ -3,6 +3,7 @@ import { useRef, useCallback } from 'react'
 import { useGameLoop } from '../../hooks/useGameLoop'
 import { GAME_CONFIG } from '../../utils/constants'
 import { useGame } from '../../hooks/useGame'
+import { getAssetPath } from '../../utils/assetPath'
 
 // Original image dimensions from roadmap
 const BG_IMAGE_WIDTH = 4500
@@ -30,7 +31,9 @@ const BackgroundImage = styled.div`
   height: 100%;
   /* Use scaled width × 2 for perfect tiling while maintaining aspect ratio */
   width: ${SCALED_BG_WIDTH * 2}px;
-  background-image: url(${props => props.$isNightMode ? '/assets/images/background-night.jpg' : '/assets/images/background.jpg'});
+  background-image: url(${props => props.$isNightMode 
+    ? getAssetPath('/assets/images/background-night.jpg') 
+    : getAssetPath('/assets/images/background.jpg')});
   background-repeat: repeat-x;
   /* Use exact sizing to maintain aspect ratio */
   background-size: ${SCALED_BG_WIDTH}px 100%;
