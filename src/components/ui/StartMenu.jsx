@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { useGame } from '../../hooks/useGame'
 import { GAME_STATES, CHARACTERS } from '../../utils/constants'
 import { motion } from 'framer-motion'
+import { Howl } from 'howler'
 
 const MenuContainer = styled.div`
   display: flex;
@@ -136,6 +137,13 @@ const CHARACTER_COSTS = {
   [CHARACTERS.MOTUN]: 1000
 }
 
+// Replace the old map of raw file paths with Howl instances:
+const characterAudioMap = {
+  [CHARACTERS.BEN]: new Howl({ src: ['/assets/audio/ben.mp3'], volume: 0.3 }),
+  [CHARACTERS.GONZALO]: new Howl({ src: ['/assets/audio/gonzalo.mp3'], volume: 0.3 }),
+  [CHARACTERS.MOTUN]: new Howl({ src: ['/assets/audio/motun.mp3'], volume: 0.3 })
+}
+
 export default function StartMenu() {
   const {
     setGameState,
@@ -147,6 +155,14 @@ export default function StartMenu() {
 
   const characters = Object.values(CHARACTERS)
   const selectedIndex = characters.indexOf(selectedCharacter)
+
+  const handleSelectCharacter = useCallback((character) => {
+    setSelectedCharacter(character)
+    const sound = characterAudioMap[character]
+    if (sound) {
+      sound.play()
+    }
+  }, [setSelectedCharacter])
 
   const handleKeyPress = useCallback((event) => {
     if (event.code === 'Space') {
@@ -166,14 +182,14 @@ export default function StartMenu() {
         currentIndex = (currentIndex + 1) % charArray.length
       }
 
-      setSelectedCharacter(charArray[currentIndex])
+      handleSelectCharacter(charArray[currentIndex])
     }
   }, [
     selectedCharacter,
     unlockedCharacters,
     setScore,
     setGameState,
-    setSelectedCharacter
+    handleSelectCharacter
   ])
 
   const handleUnlock = (character) => {
@@ -203,10 +219,7 @@ export default function StartMenu() {
             const locked = !unlockedCharacters.includes(character)
             const cost = CHARACTER_COSTS[character] || 0
 
-            // Calculate how far this character is from the selected character
             const difference = index - selectedIndex
-
-            // Fine-tune distance, scale, and opacity
             const xOffset = difference * 180
             const scale = difference === 0 ? 1.1 : 0.75
             const opacity = difference === 0 ? 1 : 0.5
@@ -215,12 +228,12 @@ export default function StartMenu() {
               <motion.div
                 key={character}
                 style={{ position: 'absolute' }}
-                onClick={() => setSelectedCharacter(character)}
+                onClick={() => handleSelectCharacter(character)}
                 animate={{
                   x: xOffset,
                   scale,
                   opacity,
-                  rotateY: difference * 10 // a subtle "rolodex" tilt
+                  rotateY: difference * 10
                 }}
                 transition={{
                   type: 'spring',
@@ -229,7 +242,6 @@ export default function StartMenu() {
                 }}
                 whileHover={{
                   cursor: locked ? 'default' : 'pointer',
-                  // Slightly enlarge if not locked
                   scale: locked ? scale : 1.1
                 }}
               >

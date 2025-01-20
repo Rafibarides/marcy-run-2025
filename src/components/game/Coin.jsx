@@ -27,6 +27,8 @@ const CoinSprite = styled(motion.img).attrs(props => ({
   width: ${GAME_CONFIG.COIN_SIZE.WIDTH}px;
   height: ${GAME_CONFIG.COIN_SIZE.HEIGHT}px;
   z-index: 999;
+  filter: ${props => props.$isNightMode ? 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.7))' : 'none'};
+  transition: filter 0.3s ease;
 `
 
 const DebugBox = styled.div.attrs(props => ({
@@ -60,7 +62,7 @@ const CoinCollisionBoundary = styled.div.attrs(props => ({
 `
 
 export default function Coin() {
-  const { characterY, setCoins } = useGame()
+  const { characterY, setCoins, isNightMode } = useGame()
   const [coinSets, setCoinSets] = useState([])
   const coinSoundRef = useRef(null)
   const timeSinceLastCoinSpawnRef = useRef(0)
@@ -187,6 +189,7 @@ export default function Coin() {
               alt="coin"
               $x={coin.x}
               $y={coin.y}
+              $isNightMode={isNightMode}
               animate={{
                 y: [0, 20, 0]
               }}
