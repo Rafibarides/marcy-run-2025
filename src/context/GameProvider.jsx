@@ -14,6 +14,8 @@ export function GameProvider({ children }) {
     y: GAME_CONFIG.GROUND_HEIGHT
   })
   const [assetsLoaded, setAssetsLoaded] = useState(false)
+  const [isNightMode, setIsNightMode] = useState(false)
+  const [unlockedCharacters, setUnlockedCharacters] = useState([CHARACTERS.BEN])
 
   const value = {
     gameState,
@@ -29,7 +31,11 @@ export function GameProvider({ children }) {
     characterPosition,
     setCharacterPosition,
     assetsLoaded,
-    setAssetsLoaded
+    setAssetsLoaded,
+    isNightMode,
+    setIsNightMode,
+    unlockedCharacters,
+    setUnlockedCharacters
   }
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>

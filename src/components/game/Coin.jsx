@@ -14,7 +14,7 @@ const CoinContainer = styled.div`
   width: ${GAME_CONFIG.VIEWPORT.WIDTH}px;
   height: ${GAME_CONFIG.VIEWPORT.HEIGHT}px;
   pointer-events: none;
-  z-index: 2;
+  z-index: 999;
 `
 
 const CoinSprite = styled(motion.img).attrs(props => ({
@@ -26,7 +26,7 @@ const CoinSprite = styled(motion.img).attrs(props => ({
   position: absolute;
   width: ${GAME_CONFIG.COIN_SIZE.WIDTH}px;
   height: ${GAME_CONFIG.COIN_SIZE.HEIGHT}px;
-  z-index: 2;
+  z-index: 999;
 `
 
 const DebugBox = styled.div.attrs(props => ({

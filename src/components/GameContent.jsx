@@ -13,6 +13,8 @@ import { useEffect, useState } from 'react'
 import LoadingScreen from './ui/LoadingScreen'
 import { useAudio } from '../hooks/useAudio'
 import { Howl } from 'howler'
+import NightMode from './ui/NightMode'
+import Moon from './game/Moon'
 
 const GameContainer = styled.div`
   width: 100vw;
@@ -88,6 +90,7 @@ export function GameContent() {
           '/assets/images/menu.png',
           '/assets/images/logo.png',
           '/assets/images/background.jpg',
+          '/assets/images/background-night.jpg',
           '/assets/images/ground.png',
           '/assets/images/moon.png',
           '/assets/images/obstacle.png',
@@ -151,14 +154,16 @@ export function GameContent() {
         {(gameState === GAME_STATES.PLAYING || gameState === GAME_STATES.GAME_OVER) && (
           <GameArea>
             <Background />
+            <NightMode />
+            <Moon />
             <Character />
+            <Ground />
             <Coin />
             <Obstacle />
-            <Ground />
-            <GameHUD />
-            {gameState === GAME_STATES.GAME_OVER && <GameOver />}
           </GameArea>
         )}
+        <GameHUD />
+        {gameState === GAME_STATES.GAME_OVER && <GameOver />}
       </GameScaler>
     </GameContainer>
   )

@@ -2,6 +2,7 @@ import styled from 'styled-components'
 import { useRef, useCallback } from 'react'
 import { useGameLoop } from '../../hooks/useGameLoop'
 import { GAME_CONFIG } from '../../utils/constants'
+import { useGame } from '../../hooks/useGame'
 
 // Original image dimensions from roadmap
 const BG_IMAGE_WIDTH = 4500
@@ -29,7 +30,7 @@ const BackgroundImage = styled.div`
   height: 100%;
   /* Use scaled width × 2 for perfect tiling while maintaining aspect ratio */
   width: ${SCALED_BG_WIDTH * 2}px;
-  background-image: url('/assets/images/background.jpg');
+  background-image: url(${props => props.$isNightMode ? '/assets/images/background-night.jpg' : '/assets/images/background.jpg'});
   background-repeat: repeat-x;
   /* Use exact sizing to maintain aspect ratio */
   background-size: ${SCALED_BG_WIDTH}px 100%;
@@ -37,18 +38,21 @@ const BackgroundImage = styled.div`
 `
 
 const Moon = styled.img`
-  position: absolute;
-  width: 40px;
-  height: 40px;
+  position: fixed;
+  width: 70px;
+  height: 70px;
   top: 15%;
   right: 15%;
-  z-index: 2;
-  opacity: 0;
+  z-index: 9999;
+  mix-blend-mode: normal;
+  opacity: ${props => props.$isNightMode ? 1 : 0.05};
+  transition: opacity 0.3s ease;
 `
 
 export default function Background() {
   const offsetRef = useRef(0)
   const backgroundRef = useRef(null)
+  const { isNightMode } = useGame()
 
   const scroll = useCallback(() => {
     offsetRef.current -= GAME_CONFIG.BACKGROUND_SPEED
@@ -65,8 +69,16 @@ export default function Background() {
 
   return (
     <BackgroundContainer>
-      <BackgroundImage ref={backgroundRef} $offset={0} />
-      <Moon src="/assets/images/moon.png" alt="moon" />
+      <BackgroundImage 
+        ref={backgroundRef} 
+        $offset={0} 
+        $isNightMode={isNightMode} 
+      />
+      <Moon 
+        src="/assets/images/moon.png" 
+        alt="moon" 
+        $isNightMode={isNightMode}
+      />
     </BackgroundContainer>
   )
 }

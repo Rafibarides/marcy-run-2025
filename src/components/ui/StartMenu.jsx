@@ -58,15 +58,20 @@ const StartPrompt = styled.div`
 
 const CharacterSelect = styled.div`
   display: flex;
-  gap: 2rem;
   justify-content: center;
   align-items: center;
+  overflow-x: hidden;
+  overflow-y: visible;
+  width: 500px;
+  height: 350px;
+  position: relative;
+  gap: 0;
 `
 
 const Character = styled(motion.img)`
-  width: 200px;
-  height: 200px;
-  max-width: 200px;
+  width: 175px;
+  height: 175px;
+  max-width: 175px;
   cursor: pointer;
   border: 3px solid ${props => props.$selected ? '#646cff' : 'transparent'};
   border-radius: 10px;
@@ -78,32 +83,109 @@ const Character = styled(motion.img)`
   }
 `
 
+const UnlockInfo = styled.div`
+  font-family: 'Poxel Font', sans-serif;
+  color: white;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+`
+
+const UnlockButton = styled.button`
+  font-family: 'Poxel Font', sans-serif;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #45a049;
+  }
+`
+
+const CostDisplay = styled.span`
+  color: #FFD700;  // Gold/yellow color
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`
+
+const LockOverlay = styled.img`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90px;
+  height: 90px;
+  opacity: 0.6;
+  pointer-events: none;
+`
+
+const CharacterWrapper = styled.div`
+  position: relative;
+  display: inline-block;
+`
+
+const CHARACTER_COSTS = {
+  [CHARACTERS.GONZALO]: 500,
+  [CHARACTERS.MOTUN]: 1000
+}
+
 export default function StartMenu() {
-  const { setGameState, selectedCharacter, setSelectedCharacter, setScore } = useGame()
+  const {
+    setGameState,
+    selectedCharacter, setSelectedCharacter,
+    setScore,
+    coins, setCoins,
+    unlockedCharacters, setUnlockedCharacters
+  } = useGame()
+
+  const characters = Object.values(CHARACTERS)
+  const selectedIndex = characters.indexOf(selectedCharacter)
 
   const handleKeyPress = useCallback((event) => {
     if (event.code === 'Space') {
-      setScore(0)
-      setGameState(GAME_STATES.PLAYING)
+      if (unlockedCharacters.includes(selectedCharacter)) {
+        setScore(0)
+        setGameState(GAME_STATES.PLAYING)
+      } else {
+        alert("This character is locked. Unlock it first!")
+      }
     } else if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
-      const characters = Object.values(CHARACTERS)
-      const currentIndex = characters.indexOf(selectedCharacter)
-      let newIndex
+      const charArray = Object.values(CHARACTERS)
+      let currentIndex = charArray.indexOf(selectedCharacter)
 
       if (event.code === 'ArrowLeft') {
-        // Move left, wrap around to end if at start
-        newIndex = currentIndex <= 0 ? characters.length - 1 : currentIndex - 1
+        currentIndex = (currentIndex - 1 + charArray.length) % charArray.length
       } else {
-        // Move right, wrap around to start if at end
-        newIndex = currentIndex >= characters.length - 1 ? 0 : currentIndex + 1
+        currentIndex = (currentIndex + 1) % charArray.length
       }
 
-      setSelectedCharacter(characters[newIndex])
+      setSelectedCharacter(charArray[currentIndex])
     }
-  }, [setGameState, setScore, selectedCharacter, setSelectedCharacter])
+  }, [
+    selectedCharacter,
+    unlockedCharacters,
+    setScore,
+    setGameState,
+    setSelectedCharacter
+  ])
 
-  const handleCharacterSelect = (character) => {
-    setSelectedCharacter(character)
+  const handleUnlock = (character) => {
+    const cost = CHARACTER_COSTS[character] || 0
+    if (coins >= cost) {
+      setCoins(coins - cost)
+      setUnlockedCharacters([...unlockedCharacters, character])
+      setSelectedCharacter(character) // Optionally auto-select the newly unlocked character
+    } else {
+      // Handle case where user does not have enough coins, e.g., show a warning
+      alert(`Not enough coins for ${character}. You need ${cost} coins.`)
+    }
   }
 
   // Add event listener for space key
@@ -117,33 +199,71 @@ export default function StartMenu() {
       <ContentWrapper>
         <Logo src="/assets/images/logo.png" alt="Marcy Run" />
         <CharacterSelect>
-          {Object.values(CHARACTERS).map(character => (
-            <Character
-              key={character}
-              src={`/assets/images/${character}.png`}
-              alt={character}
-              $selected={selectedCharacter === character}
-              onClick={() => handleCharacterSelect(character)}
-              animate={selectedCharacter === character ? {
-                scale: [1, 1.05, 1],
-                rotate: [-2, 2, 0],
-                transition: {
-                  duration: 0.3,
-                  ease: "easeOut",
-                  times: [0, 0.5, 1]
-                }
-              } : {
-                scale: 1,
-                rotate: 0
-              }}
-              whileHover={{
-                scale: 1.1,
-                transition: { duration: 0.2 }
-              }}
-            />
-          ))}
+          {characters.map((character, index) => {
+            const locked = !unlockedCharacters.includes(character)
+            const cost = CHARACTER_COSTS[character] || 0
+
+            // Calculate how far this character is from the selected character
+            const difference = index - selectedIndex
+
+            // Fine-tune distance, scale, and opacity
+            const xOffset = difference * 180
+            const scale = difference === 0 ? 1.1 : 0.75
+            const opacity = difference === 0 ? 1 : 0.5
+
+            return (
+              <motion.div
+                key={character}
+                style={{ position: 'absolute' }}
+                onClick={() => setSelectedCharacter(character)}
+                animate={{
+                  x: xOffset,
+                  scale,
+                  opacity,
+                  rotateY: difference * 10 // a subtle "rolodex" tilt
+                }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 80,
+                  damping: 10
+                }}
+                whileHover={{
+                  cursor: locked ? 'default' : 'pointer',
+                  // Slightly enlarge if not locked
+                  scale: locked ? scale : 1.1
+                }}
+              >
+                <CharacterWrapper>
+                  <Character
+                    src={`/assets/images/${character}.png`}
+                    alt={character}
+                    $selected={selectedCharacter === character}
+                  />
+                  {locked && (
+                    <LockOverlay
+                      src="/assets/images/lock.png"
+                      alt="locked"
+                    />
+                  )}
+                </CharacterWrapper>
+                {locked && (
+                  <UnlockInfo>
+                    <CostDisplay>
+                      {cost} <img src="/assets/images/coin.png" alt="coins" style={{width: '25px', height: '25px'}} />
+                    </CostDisplay>
+                    <UnlockButton onClick={() => handleUnlock(character)}>
+                      PURCHASE
+                    </UnlockButton>
+                  </UnlockInfo>
+                )}
+              </motion.div>
+            )
+          })}
         </CharacterSelect>
-        <StartPrompt>HIT SPACE TO START GAME</StartPrompt>
+        <StartPrompt>
+          HIT SPACE TO START GAME
+          {unlockedCharacters.includes(selectedCharacter) ? '' : ' (LOCKED)'}
+        </StartPrompt>
       </ContentWrapper>
     </MenuContainer>
   )

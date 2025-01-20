@@ -62,7 +62,7 @@ const MainMenuButton = styled.button`
 `
 
 export default function GameOver() {
-  const { setGameState, coins, setCoins, setScore } = useGame()
+  const { setGameState, coins, setScore } = useGame()
 
   const [countdown, setCountdown] = useState(3)
   const [allowRestart, setAllowRestart] = useState(false)
@@ -86,17 +86,15 @@ export default function GameOver() {
   }, [])
 
   const handleMainMenu = useCallback(() => {
-    // Reset score/coins and go to main menu
-    setCoins(0)
+    // Reset score, but don't reset coins
     setScore(0)
     setGameState(GAME_STATES.MENU)
-  }, [setCoins, setScore, setGameState])
+  }, [setScore, setGameState])
 
   const handleKeyPress = useCallback((event) => {
     if (!allowRestart) return
     if (event.code === 'Space') {
-      // Reset all game state
-      setCoins(0)
+      // Reset all game state except coins
       setScore(0)
       
       // Force a re-render of game components by changing state to MENU briefly
@@ -107,7 +105,7 @@ export default function GameOver() {
         setGameState(GAME_STATES.PLAYING)
       }, 0)
     }
-  }, [setGameState, setCoins, setScore, allowRestart])
+  }, [setGameState, setScore, allowRestart])
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress)

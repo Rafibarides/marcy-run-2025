@@ -8,7 +8,7 @@ const HUDContainer = styled.div`
   top: 20px;
   width: 100%;
   padding: 0 40px;
-  z-index: 10;
+  z-index: 11;
   display: flex;
   justify-content: space-between;
   box-sizing: border-box;

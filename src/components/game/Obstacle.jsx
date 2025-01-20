@@ -130,6 +130,9 @@ export default function Obstacle() {
         if (checkCollision(adjustedObstacleRect, characterRect)) {
           // Mark obstacle as hit if you want to style it differently
           obstacle.hit = true;
+          
+          // Stop any existing playback before playing again
+          loserSoundRef.current?.stop();
           loserSoundRef.current?.play();
 
           // Trigger game over, but do NOT continue,
