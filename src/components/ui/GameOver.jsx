@@ -115,7 +115,7 @@ export default function GameOver() {
   return (
     <GameOverContainer>
       <GameOverText>GAME OVER</GameOverText>
-      <FinalScore>Final Score: {coins} coins</FinalScore>
+      <FinalScore>{coins} coins</FinalScore>
       {allowRestart
         ? <RestartPromptKid>PRESS SPACE TO PLAY AGAIN</RestartPromptKid>
         : <RestartPrompt>{countdown}</RestartPrompt>}
