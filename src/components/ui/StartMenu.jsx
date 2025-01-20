@@ -252,13 +252,13 @@ export default function StartMenu() {
               >
                 <CharacterWrapper>
                   <Character
-                    src={`/assets/images/${character}.png`}
+                    src={getAssetPath(`/assets/images/${character}.png`)}
                     alt={character}
                     $selected={selectedCharacter === character}
                   />
                   {locked && (
                     <LockOverlay
-                      src="/assets/images/lock.png"
+                      src={getAssetPath('/assets/images/lock.png')}
                       alt="locked"
                     />
                   )}
@@ -266,7 +266,7 @@ export default function StartMenu() {
                 {locked && (
                   <UnlockInfo>
                     <CostDisplay>
-                      {cost} <img src="/assets/images/coin.png" alt="coins" style={{width: '25px', height: '25px'}} />
+                      {cost} <img src={getAssetPath('/assets/images/coin.png')} alt="coins" style={{width: '25px', height: '25px'}} />
                     </CostDisplay>
                     <UnlockButton onClick={() => handleUnlock(character)}>
                       PURCHASE
