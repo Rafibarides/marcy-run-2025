@@ -125,6 +125,38 @@ export function GameContent() {
               onloaderror: (_, err) => reject(err)
             })
           }),
+          new Promise((resolve, reject) => {
+            new Howl({
+              src: [getAssetPath('/assets/audio/ben.mp3')],
+              preload: true,
+              onload: () => resolve(),
+              onloaderror: (_, err) => reject(err)
+            })
+          }),
+          new Promise((resolve, reject) => {
+            new Howl({
+              src: [getAssetPath('/assets/audio/gonzalo.mp3')],
+              preload: true,
+              onload: () => resolve(),
+              onloaderror: (_, err) => reject(err)
+            })
+          }),
+          new Promise((resolve, reject) => {
+            new Howl({
+              src: [getAssetPath('/assets/audio/motun.mp3')],
+              preload: true,
+              onload: () => resolve(),
+              onloaderror: (_, err) => reject(err)
+            })
+          }),
+          new Promise((resolve, reject) => {
+            new Howl({
+              src: [getAssetPath('/assets/audio/music.mp3')],
+              preload: true,
+              onload: () => resolve(),
+              onloaderror: (_, err) => reject(err)
+            })
+          })
         ]
 
         // Wait for all assets (images, fonts, audio) to load
