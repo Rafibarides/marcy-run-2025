@@ -7,7 +7,6 @@ import { motion } from 'framer-motion'
 import { useGameLoop } from '../../hooks/useGameLoop'
 import { toCSSPosition } from '../../utils/coordinates'
 import { Howl } from 'howler'
-import { AUDIO } from '../../utils/constants'
 import { getAssetPath } from '../../utils/assetPath'
 
 const CoinContainer = styled.div`
@@ -65,7 +64,10 @@ const CoinCollisionBoundary = styled.div.attrs(props => ({
 export default function Coin() {
   const { characterY, setCoins, isNightMode } = useGame()
   const [coinSets, setCoinSets] = useState([])
-  const coinSoundRef = useRef(null)
+  const coinSoundRef = useRef(new Howl({
+    src: [getAssetPath('/assets/audio/coin.mp3')],
+    volume: 0.5
+  }))
   const timeSinceLastCoinSpawnRef = useRef(0)
   const [spawnInterval, setSpawnInterval] = useState(null)
 
@@ -95,11 +97,6 @@ export default function Coin() {
   }, [])
 
   useEffect(() => {
-    coinSoundRef.current = new Howl({
-      src: [`/assets/audio/${AUDIO.COIN_COLLECT}`],
-      volume: 0.5,
-      preload: true
-    })
     resetSpawnInterval()
   }, [resetSpawnInterval])
 
