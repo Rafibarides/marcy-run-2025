@@ -80,7 +80,7 @@ export default function Character() {
   const jump = useCallback(() => {
     // Use a smaller jump force for a lower peak
     if (!isJumping && canJump) {
-      setVelocity(22)  // Reduced from 22 to make jump height more consistent
+      setVelocity(20)  // Reduced from 22 to make jump height more consistent
       setIsJumping(true)
       setCanJump(false)
     }
