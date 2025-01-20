@@ -8,10 +8,14 @@ permissions:
   contents: write
   pages: write
   id-token: write
+  deployments: write
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v3
       
@@ -26,15 +30,14 @@ jobs:
       - name: Build
         run: npm run build
         
-      # Add this step to clear cache
-      - name: Clear GitHub Pages cache
-        run: |
-          curl -X PURGE https://rafibarides.github.io/marcy-run-2025/
-        continue-on-error: true
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
         
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          force_orphan: true  # Add this line to force a clean deployment
+          path: './dist'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
