@@ -1,26 +1,42 @@
-import { useEffect, useCallback, useMemo } from 'react'
+import { useEffect, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 import { useGame } from '../../hooks/useGame'
 import { GAME_STATES, CHARACTERS } from '../../utils/constants'
 import { motion } from 'framer-motion'
 import { Howl } from 'howler'
 import { getAssetPath } from '../../utils/assetPath'
+import { GAME_CONFIG } from '../../utils/constants'
 
 // Extract critical styles to reduce style calculation time
 const MenuContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
   background-image: url(${props => props.style?.backgroundImage});
   background-size: cover;
   background-position: center;
-  position: relative;
+  background-repeat: no-repeat;
   z-index: 1000;
-  /* Add will-change to optimize the background-image rendering */
-  will-change: background-image;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`
+
+// Add a new overlay container for the dark semi-transparent effect if needed
+const Overlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `
 
 // Optimize content wrapper performance
@@ -30,6 +46,8 @@ const ContentWrapper = styled.div`
   align-items: center;
   gap: 2rem;
   padding: 2rem;
+  width: ${GAME_CONFIG.VIEWPORT.WIDTH}px;
+  height: ${GAME_CONFIG.VIEWPORT.HEIGHT}px;
   /* Add containment for better performance */
   contain: layout style;
   ${props => props.$isMobile && `
@@ -186,7 +204,46 @@ const characterAudioMap = {
   })
 }
 
+// Update GameAreaWrapper to be centered absolutely
+const GameAreaWrapper = styled.div`
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`
+
 export default function StartMenu() {
+  const [scale, setScale] = useState(1)
+  
+  // Add scaling calculation effect
+  useEffect(() => {
+    const updateScale = () => {
+      const windowWidth = window.innerWidth
+      const windowHeight = window.innerHeight
+      const windowRatio = windowWidth / windowHeight
+      const gameRatio = GAME_CONFIG.VIEWPORT.WIDTH / GAME_CONFIG.VIEWPORT.HEIGHT
+
+      let newScale
+      if (windowRatio > gameRatio) {
+        // Window is wider - fit to height
+        newScale = windowHeight / GAME_CONFIG.VIEWPORT.HEIGHT
+      } else {
+        // Window is taller - fit to width
+        newScale = windowWidth / GAME_CONFIG.VIEWPORT.WIDTH
+      }
+      setScale(newScale)
+    }
+
+    updateScale()
+    window.addEventListener('resize', updateScale)
+    return () => window.removeEventListener('resize', updateScale)
+  }, [])
+
   // Basic check for mobile devices
   const isMobile = useMemo(
     () => /Mobi|Android/i.test(navigator.userAgent),
@@ -271,83 +328,85 @@ export default function StartMenu() {
     <MenuContainer
       style={{ backgroundImage: `url(${getAssetPath('/assets/images/menu.avif')})` }}
     >
-      <ContentWrapper $isMobile={isMobile}>
-        <Logo 
-          src={getAssetPath('/assets/images/logo.avif')} 
-          alt="Marcy Run" 
-          $isMobile={isMobile}
-          width={isMobile ? "100" : "300"}
-          height={isMobile ? "51" : "152"}  // Maintains the original aspect ratio
-        />
-        <CharacterSelect $isMobile={isMobile}>
-          {characters.map((character, index) => {
-            const locked = !unlockedCharacters.includes(character)
-            const cost = CHARACTER_COSTS[character] || 0
+      <Overlay>
+        <GameAreaWrapper $scale={scale}>
+          <ContentWrapper $isMobile={isMobile}>
+            <Logo 
+              src={getAssetPath('/assets/images/logo.avif')} 
+              alt="Marcy Run" 
+              $isMobile={isMobile}
+              width={isMobile ? "100" : "300"}
+              height={isMobile ? "51" : "152"}
+            />
+            <CharacterSelect $isMobile={isMobile}>
+              {characters.map((character, index) => {
+                const locked = !unlockedCharacters.includes(character)
+                const cost = CHARACTER_COSTS[character] || 0
 
-            const difference = index - selectedIndex
-            const xOffset = difference * (isMobile ? 100 : 180)
-            const scale = difference === 0 ? 1.1 : 0.75
-            const opacity = difference === 0 ? 1 : 0.5
+                const difference = index - selectedIndex
+                const xOffset = difference * (isMobile ? 100 : 180)
+                const scale = difference === 0 ? 1.1 : 0.75
+                const opacity = difference === 0 ? 1 : 0.5
 
-            return (
-              <motion.div
-                key={character}
-                style={{ position: 'absolute' }}
-                onClick={() => handleSelectCharacter(character)}
-                animate={{
-                  x: xOffset,
-                  scale,
-                  opacity,
-                  rotateY: difference * 10
-                }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 80,
-                  damping: 10
-                }}
-                whileHover={{
-                  cursor: locked ? 'default' : 'pointer',
-                  scale: locked ? scale : 1.1
-                }}
-              >
-                <CharacterWrapper>
-                  <Character
-                    src={getAssetPath(`/assets/images/${character}.avif`)}
-                    alt={character}
-                    $selected={selectedCharacter === character}
-                    $isMobile={isMobile}
-                  />
-                  {locked && (
-                    <LockOverlay
-                      src={getAssetPath('/assets/images/lock.avif')}
-                      alt="locked"
-                    />
-                  )}
-                </CharacterWrapper>
-                {locked && (
-                  <UnlockInfo $isMobile={isMobile}>
-                    <CostDisplay>
-                      {cost} <img src={getAssetPath('/assets/images/coin.avif')} alt="marcy-coins" />
-                    </CostDisplay>
-                    <UnlockButton onClick={() => handleUnlock(character)}>
-                      PURCHASE
-                    </UnlockButton>
-                  </UnlockInfo>
-                )}
-              </motion.div>
-            )
-          })}
-        </CharacterSelect>
-        <StartPrompt 
-          $isMobile={isMobile}
-          onClick={isMobile ? () => {
-            handleMobileTap();
-          } : undefined}
-        >
-          {isMobile ? 'TAP TO START GAME' : 'HIT SPACE TO START GAME'}
-          {unlockedCharacters.includes(selectedCharacter) ? '' : ' (LOCKED)'}
-        </StartPrompt>
-      </ContentWrapper>
+                return (
+                  <motion.div
+                    key={character}
+                    style={{ position: 'absolute' }}
+                    onClick={() => handleSelectCharacter(character)}
+                    animate={{
+                      x: xOffset,
+                      scale,
+                      opacity,
+                      rotateY: difference * 10
+                    }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 80,
+                      damping: 10
+                    }}
+                    whileHover={{
+                      cursor: locked ? 'default' : 'pointer',
+                      scale: locked ? scale : 1.1
+                    }}
+                  >
+                    <CharacterWrapper>
+                      <Character
+                        src={getAssetPath(`/assets/images/${character}.avif`)}
+                        alt={character}
+                        $selected={selectedCharacter === character}
+                        $isMobile={isMobile}
+                      />
+                      {locked && (
+                        <LockOverlay
+                          src={getAssetPath('/assets/images/lock.avif')}
+                          alt="locked"
+                        />
+                      )}
+                    </CharacterWrapper>
+                    {locked && (
+                      <UnlockInfo $isMobile={isMobile}>
+                        <CostDisplay>
+                          {cost} <img src={getAssetPath('/assets/images/coin.avif')} alt="marcy-coins" />
+                        </CostDisplay>
+                        <UnlockButton onClick={() => handleUnlock(character)}>
+                          PURCHASE
+                        </UnlockButton>
+                      </UnlockInfo>
+                    )}
+                  </motion.div>
+                )
+              })}
+            </CharacterSelect>
+            <StartPrompt 
+              $isMobile={isMobile}
+              onClick={isMobile ? handleMobileTap : undefined}
+            >
+              {isMobile ? 'TAP TO START GAME' : 'HIT SPACE TO START GAME'}
+              {unlockedCharacters.includes(selectedCharacter) ? '' : ' (LOCKED)'}
+            </StartPrompt>
+          </ContentWrapper>
+        </GameAreaWrapper>
+      </Overlay>
     </MenuContainer>
   )
 }

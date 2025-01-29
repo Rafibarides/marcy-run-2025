@@ -2,7 +2,7 @@ import { lazy, Suspense } from 'react'
 import styled from 'styled-components'
 import { useGame } from '../hooks/useGame'
 import { GAME_STATES, GAME_CONFIG } from '../utils/constants'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState} from 'react'
 import LoadingScreen from './ui/LoadingScreen'
 import { useAudio } from '../hooks/useAudio'
 import { Howl } from 'howler'
@@ -20,11 +20,10 @@ const GameContainer = styled.div`
 
 const GameScaler = styled.div`
   position: relative;
-  /* Only override scaling for menu state on mobile */
-  ${props => props.$isMobile && props.$gameState === GAME_STATES.MENU ? `
+  /* Only apply game viewport scaling when not in menu state */
+  ${props => props.$gameState === GAME_STATES.MENU ? `
     width: 100vw;
     height: 100vh;
-    transform: none;
   ` : `
     width: ${GAME_CONFIG.VIEWPORT.WIDTH}px;
     height: ${GAME_CONFIG.VIEWPORT.HEIGHT}px;
@@ -68,7 +67,6 @@ const Moon = lazy(() => import('./game/Moon'))
 export function GameContent() {
   const { gameState, assetsLoaded, setAssetsLoaded } = useGame()
   const [scale, setScale] = useState(1)
-  const isMobile = useMemo(() => /Mobi|Android/i.test(navigator.userAgent), [])
   useAudio()
 
   useEffect(() => {
@@ -195,7 +193,6 @@ export function GameContent() {
     <GameContainer>
       <GameScaler 
         $scale={scale} 
-        $isMobile={isMobile}
         $gameState={gameState}
       >
         {/* Split Suspense boundaries to prioritize menu loading */}
